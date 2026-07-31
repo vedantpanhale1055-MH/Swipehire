@@ -2,7 +2,7 @@
 
 AI-powered job discovery, matching, application tracking, and resume/portfolio builder — built to run entirely on free-tier infrastructure.
 
-Full product spec: [SwipehirePRD.md](./SwipehirePRD.md)
+Full product spec: [PRD.md](./PRD.md)
 
 ## Features
 
@@ -37,11 +37,11 @@ Full product spec: [SwipehirePRD.md](./SwipehirePRD.md)
 | Hosting | Vercel |
 | Job data | Adzuna, Jooble, Arbeitnow, RemoteOK, TheMuse |
 
-Everything above runs on a free tier — see [Section 6](./SwipehirePRD.md#6-tech-stack-zero-cost) of the PRD for details, and [Section 7](./SwipehirePRD.md#7-scaling--cost-control-strategy) for how it stays free-tier even as usage grows.
+Everything above runs on a free tier — see [Section 6](./PRD.md#6-tech-stack-zero-cost) of the PRD for details, and [Section 7](./PRD.md#7-scaling--cost-control-strategy) for how it stays free-tier even as usage grows.
 
 ## Status
 
-In active development. See the [phased roadmap](./SwipehirePRD.md#9-phased-roadmap) for what's shipped vs. planned.
+In active development. See the [phased roadmap](./PRD.md#9-phased-roadmap) for what's shipped vs. planned.
 
 - [x] PRD finalized
 - [ ] Phase 1 — paste-a-JD matching + basic tracker
@@ -89,7 +89,7 @@ Swipehire/
 ├── .env.local
 ├── package.json
 ├── README.md
-└── SwipehirePRD.md
+└── PRD.md
 ```
 
 ## Getting started
