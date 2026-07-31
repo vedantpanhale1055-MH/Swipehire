@@ -49,6 +49,49 @@ In active development. See the [phased roadmap](./SwipehirePRD.md#9-phased-roadm
 - [ ] Phase 3 — resume builder + tailoring + portfolio
 - [ ] Phase 4 — expanded sources + scaling polish
 
+## Project structure
+
+```
+Swipehire/
+├── app/
+│   ├── (auth)/
+│   │   ├── login/
+│   │   └── signup/
+│   ├── discover/          # swipe deck
+│   ├── applications/      # kanban tracker
+│   ├── resume/            # resume builder
+│   ├── portfolio/
+│   │   └── [username]/    # public portfolio page
+│   ├── api/
+│   │   ├── ingest/        # job aggregation
+│   │   ├── match-score/   # AI match scoring
+│   │   ├── tailor-resume/ # per-job resume tailoring
+│   │   ├── applications/  # tracker CRUD
+│   │   └── resume-parse/  # resume upload parsing
+│   ├── layout.js
+│   └── globals.css
+├── components/
+│   ├── SwipeCard/
+│   ├── JobDetail/
+│   ├── KanbanBoard/
+│   ├── ResumeBuilder/
+│   └── ui/
+├── lib/
+│   ├── supabase.js
+│   ├── groq.js
+│   ├── jobSources/         # one file per aggregation source
+│   │   ├── adzuna.js
+│   │   ├── jooble.js
+│   │   ├── arbeitnow.js
+│   │   └── greenhouse.js
+│   └── tokens.css          # shared design tokens for CSS Modules
+├── public/
+├── .env.local
+├── package.json
+├── README.md
+└── SwipehirePRD.md
+```
+
 ## Getting started
 
 ```bash
