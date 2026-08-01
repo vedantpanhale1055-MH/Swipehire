@@ -1,98 +1,56 @@
 # SwipeHire
 
-AI-powered job discovery, matching, application tracking, and resume/portfolio builder — built to run entirely on free-tier infrastructure.
+AI-powered job discovery, matching, and application tracker. Aggregates job listings, scores fit against your resume using AI, lets you triage jobs with a swipe interface, tracks applications on a Kanban board, and tailors your resume per job.
 
-Full product spec: [PRD.md](./PRD.md)
+Full product scope and roadmap: see [PRD.md](./PRD.md).
 
-## Features
+## Tech stack (zero-cost)
 
-- 🔎 **Job aggregation** — pulls listings from Adzuna, Jooble, Arbeitnow, RemoteOK, TheMuse, and public ATS endpoints (Greenhouse, Lever). No LinkedIn/Indeed/Glassdoor scraping.
-- 🎯 **AI match scoring** — every listing is scored 0–100 against your resume, with a plain-language reasoning breakdown and matched-skill chips.
-- 🃏 **Swipe discovery** — quick reject/save triage, sorted by match score, filterable by job type and location.
-- 📋 **Kanban tracker** — saved jobs flow through Saved → Applied → Assessment → Interview → Offer → Rejected, with notes and status history.
-- 📝 **Resume builder** — structured sections (experience, education, skills, projects), live preview, clean PDF export.
-- ✏️ **Per-job tailoring** — AI suggests specific edits to your resume for each job you're applying to.
-- 🌐 **Portfolio builder** — a shareable public page generated from the same profile data as your resume.
-- 🌍 **Job types & modes** — internship, full-time, part-time, contract, across remote, hybrid, and onsite.
-
-## Screenshots
-
-| Discovery | Job detail | Tracker |
-|---|---|---|
-| _add screenshot_ | _add screenshot_ | _add screenshot_ |
-
-| Resume builder | Portfolio |
-|---|---|
-| _add screenshot_ | _add screenshot_ |
-
-## Tech stack
-
-| Layer | Choice |
-|---|---|
-| Frontend | Next.js + framer-motion |
-| Styling | CSS Modules |
-| Backend | Next.js API routes |
-| Database & Auth | Supabase (Postgres + Auth) |
-| AI | Groq (Llama 3.3 70B / 8B) |
-| Hosting | Vercel |
-| Job data | Adzuna, Jooble, Arbeitnow, RemoteOK, TheMuse |
-
-Everything above runs on a free tier — see [Section 6](./PRD.md#6-tech-stack-zero-cost) of the PRD for details, and [Section 7](./PRD.md#7-scaling--cost-control-strategy) for how it stays free-tier even as usage grows.
-
-## Status
-
-In active development. See the [phased roadmap](./PRD.md#9-phased-roadmap) for what's shipped vs. planned.
-
-- [x] PRD finalized
-- [ ] Phase 1 — paste-a-JD matching + basic tracker
-- [ ] Phase 2 — aggregation + swipe deck + auth
-- [ ] Phase 3 — resume builder + tailoring + portfolio
-- [ ] Phase 4 — expanded sources + scaling polish
+- **Framework:** Next.js 14 (App Router)
+- **Database + Auth:** Supabase (Postgres, free tier)
+- **AI:** Groq API (free-tier Llama inference) — job-fit scoring and resume tailoring
+- **Job sources:** Remotive and Arbeitnow public APIs
+- **Styling:** CSS Modules
+- **Hosting (planned):** Vercel
 
 ## Project structure
 
 ```
-Swipehire/
-├── app/
-│   ├── (auth)/
-│   │   ├── login/
-│   │   └── signup/
-│   ├── discover/          # swipe deck
-│   ├── applications/      # kanban tracker
-│   ├── resume/            # resume builder
-│   ├── portfolio/
-│   │   └── [username]/    # public portfolio page
-│   ├── api/
-│   │   ├── ingest/        # job aggregation
-│   │   ├── match-score/   # AI match scoring
-│   │   ├── tailor-resume/ # per-job resume tailoring
-│   │   ├── applications/  # tracker CRUD
-│   │   └── resume-parse/  # resume upload parsing
-│   ├── layout.js
-│   └── globals.css
-├── components/
-│   ├── SwipeCard/
-│   ├── JobDetail/
-│   ├── KanbanBoard/
-│   ├── ResumeBuilder/
-│   └── ui/
-├── lib/
-│   ├── supabase.js
-│   ├── groq.js
-│   ├── jobSources/         # one file per aggregation source
-│   │   ├── adzuna.js
-│   │   ├── jooble.js
-│   │   ├── arbeitnow.js
-│   │   └── greenhouse.js
-│   └── tokens.css          # shared design tokens for CSS Modules
-├── public/
-├── .env.local
-├── package.json
-├── README.md
-└── PRD.md
+app/
+  (auth)/
+    login/page.js        # Email/password login
+    signup/page.js        # Email/password signup
+  api/
+    jobs/route.js          # GET/POST/PATCH/DELETE saved jobs
+    jobs/score/route.js    # AI job-fit scoring (single or batch)
+    resume/tailor/route.js # AI resume tailoring
+  applications/            # Kanban application tracker (WIP)
+  discover/                 # Swipe-card job feed (WIP)
+  portfolio/                # Portfolio builder (WIP)
+  resume/                   # Resume builder (WIP)
+  layout.js                 # Root layout, wraps app in AuthProvider
+  page.js                   # Home page
+components/
+  AuthProvider.js           # React context for logged-in user/session state
+  JobDetail/                # (WIP)
+  KanbanBoard/               # (WIP)
+  ResumeBuilder/             # (WIP)
+  SwipeCard/                  # (WIP)
+  ui/                          # (WIP)
+lib/
+  supabase.js                # Supabase client, auth helpers, saved-jobs DB helpers
+  groq.js                     # Groq client — job-fit scoring, resume tailoring
+  jobSources.js                # Job aggregation adapter (Remotive + Arbeitnow)
+  tokens.css                   # Design tokens (WIP)
+next.config.js
+jsconfig.json                  # Enables the "@/" import alias
+package.json
+PRD.md
 ```
 
-## Getting started
+## Local setup
+
+### 1. Clone and install
 
 ```bash
 git clone https://github.com/vedantpanhale1055-MH/Swipehire.git
@@ -100,27 +58,88 @@ cd Swipehire
 npm install
 ```
 
-Create a `.env.local` with:
+### 2. Environment variables
+
+Create `.env.local` in the project root (never committed — already in `.gitignore`):
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-GROQ_API_KEY=
-ADZUNA_APP_ID=
-ADZUNA_APP_KEY=
-JOOBLE_API_KEY=
+NEXT_PUBLIC_SUPABASE_URL=https://<your-project-id>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your Supabase publishable key>
+GROQ_API_KEY=<your Groq API key>
 ```
 
-Then run:
+- Supabase URL/key: Supabase dashboard → Settings → API (use the **Publishable key**, not the secret key)
+- Groq key: [console.groq.com](https://console.groq.com) → API Keys
+
+### 3. Supabase database setup
+
+Create a `saved_jobs` table (Table Editor → New table) with columns:
+
+| column | type | default |
+|---|---|---|
+| id | int8 | auto (primary key) |
+| created_at | timestamptz | `now()` |
+| user_id | uuid | — |
+| title | text | — |
+| company | text | — |
+| location | text | — |
+| description | text | — |
+| url | text | — |
+| status | text | `saved` |
+
+Then run this in the SQL Editor to enable row-level security so users can only access their own jobs:
+
+```sql
+alter table saved_jobs enable row level security;
+
+create policy "Users can view their own jobs"
+on saved_jobs for select
+using (auth.uid() = user_id);
+
+create policy "Users can insert their own jobs"
+on saved_jobs for insert
+with check (auth.uid() = user_id);
+
+create policy "Users can update their own jobs"
+on saved_jobs for update
+using (auth.uid() = user_id);
+
+create policy "Users can delete their own jobs"
+on saved_jobs for delete
+using (auth.uid() = user_id);
+
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on saved_jobs to authenticated;
+```
+
+### 4. Run the dev server
 
 ```bash
 npm run dev
 ```
 
-## Contributing
+Visit `http://localhost:3000`.
 
-This is a personal project currently in early development. Issues and suggestions are welcome; PRs may be reviewed loosely until the core (Phase 1–2) stabilizes.
+## Current status
 
-## License
+**Working:**
+- Next.js app boots and renders
+- Email/password signup and login (Supabase Auth), with email confirmation
+- Session persistence across the app via `AuthProvider`
+- `saved_jobs` table with RLS policies restricting access to each user's own rows
+- API routes for saved jobs CRUD, AI job-fit scoring, and AI resume tailoring
+- Job aggregation from Remotive and Arbeitnow
 
-MIT
+**In progress / not yet built:**
+- Discover page (swipe-card UI)
+- Applications page (Kanban board UI)
+- Resume builder UI
+- Portfolio builder UI
+- Connecting browser session tokens to API routes so authenticated requests actually work end-to-end
+- Styling (CSS Modules / design tokens)
+
+## Security notes
+
+- `.env.local` holds real secrets and is never committed
+- The Supabase **anon/publishable** key is safe for client-side use only because RLS policies are enabled on all tables
+- Table access is granted to the `authenticated` role only — not `anon` — so requests must come from a logged-in session
