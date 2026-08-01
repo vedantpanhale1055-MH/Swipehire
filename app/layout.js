@@ -1,5 +1,7 @@
 // app/layout.js
-// Required root layout for the Next.js App Router — wraps every page.
+// UPDATE — replaces the layout.js content you pasted earlier, adds AuthProvider wrapper.
+
+import { AuthProvider } from '@/components/AuthProvider';
 
 export const metadata = {
   title: 'SwipeHire',
@@ -9,7 +11,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }
