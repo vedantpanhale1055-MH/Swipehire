@@ -51,6 +51,15 @@ export default function SwipeCard({ job, onSwipe, isTop }) {
   }
 
   const rotation = dragX / 20;
+  const score = typeof job.matchScore === "number" ? job.matchScore : null;
+  const ringDeg = score !== null ? (score / 100) * 360 : 0;
+
+  function getMatchColor(value) {
+    if (value >= 80) return "var(--color-success)";
+    if (value >= 60) return "var(--color-warning)";
+    return "var(--color-danger)";
+  }
+  const ringColor = score !== null ? getMatchColor(score) : "var(--color-primary)";
 
   return (
     <div
@@ -74,13 +83,22 @@ export default function SwipeCard({ job, onSwipe, isTop }) {
           <h2 className={styles.title}>{job.title}</h2>
           <p className={styles.company}>{job.company}</p>
         </div>
-        {typeof job.matchScore === "number" && (
-          <div className={styles.matchBadge}>{job.matchScore}%</div>
+        {score !== null && (
+          <div
+            className={styles.matchRing}
+            style={{
+              background: `conic-gradient(${ringColor} ${ringDeg}deg, var(--color-border) ${ringDeg}deg)`,
+            }}
+          >
+            <div className={styles.matchRingInner}>
+              <span className={styles.matchScore} style={{ color: ringColor }}>
+                {score}%
+              </span>
+            </div>
+          </div>
         )}
       </div>
 
-      {/* Background (non-top) cards only show the header — description/tags/meta
-          are hidden so overlapping stacked cards don't show bleeding text. */}
       {isTop && (
         <>
           <div className={styles.meta}>
