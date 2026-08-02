@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./SwipeCard.module.css";
 
 /**
@@ -11,6 +12,7 @@ import styles from "./SwipeCard.module.css";
  *  - isTop: whether this card is the top (interactive) card in the stack
  */
 export default function SwipeCard({ job, onSwipe, isTop }) {
+  const router = useRouter();
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const startX = useRef(0);
@@ -77,6 +79,20 @@ export default function SwipeCard({ job, onSwipe, isTop }) {
     >
       {isTop && dragX > 40 && <div className={`${styles.stamp} ${styles.saveStamp}`}>SAVE</div>}
       {isTop && dragX < -40 && <div className={`${styles.stamp} ${styles.rejectStamp}`}>SKIP</div>}
+
+      {isTop && (
+        <button
+          className={styles.infoBtn}
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(`/jobs/${job.id}`);
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          aria-label="View details"
+        >
+          ⓘ
+        </button>
+      )}
 
       <div className={styles.header}>
         <div>
