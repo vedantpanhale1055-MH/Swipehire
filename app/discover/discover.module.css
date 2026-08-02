@@ -22,8 +22,6 @@
   height: 480px;
 }
 
-/* Cards behind the top one are visually offset to create a stacked "peek" effect.
-   Applied via inline style in page.js using --stack-index, with this as the base rule. */
 .cardSlot {
   position: absolute;
   inset: 0;
