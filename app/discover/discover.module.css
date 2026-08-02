@@ -3,15 +3,16 @@
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
-  padding: 32px 16px;
-  background: #f9fafb;
+  padding: var(--space-8) var(--space-4);
+  background: var(--color-bg);
+  font-family: var(--font-sans);
 }
 
 .heading {
-  font-size: 1.6rem;
+  font-size: var(--text-2xl);
   font-weight: 700;
-  color: #111827;
-  margin-bottom: 24px;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-6);
 }
 
 .stackWrapper {
@@ -21,6 +22,13 @@
   height: 480px;
 }
 
+/* Cards behind the top one are visually offset to create a stacked "peek" effect.
+   Applied via inline style in page.js using --stack-index, with this as the base rule. */
+.cardSlot {
+  position: absolute;
+  inset: 0;
+}
+
 .emptyState {
   display: flex;
   flex-direction: column;
@@ -28,20 +36,23 @@
   justify-content: center;
   height: 100%;
   text-align: center;
-  color: #6b7280;
-  gap: 8px;
+  color: var(--color-text-muted);
+  gap: var(--space-2);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 .emptyState p {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
-  color: #374151;
+  color: var(--color-text-secondary);
 }
 
 .actions {
   display: flex;
-  gap: 24px;
-  margin-top: 28px;
+  gap: var(--space-6);
+  margin-top: var(--space-8);
 }
 
 .actionBtn {
@@ -49,13 +60,13 @@
   height: 56px;
   border-radius: 50%;
   border: none;
-  font-size: 1.4rem;
+  font-size: var(--text-xl);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
-  transition: transform 0.15s ease;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
 }
 
 .actionBtn:active {
@@ -63,13 +74,13 @@
 }
 
 .rejectBtn {
-  background: #ffffff;
-  color: #dc2626;
-  border: 2px solid #fecaca;
+  background: var(--color-surface);
+  color: var(--color-danger);
+  border: 2px solid var(--color-danger-border);
 }
 
 .saveBtn {
-  background: #ffffff;
-  color: #059669;
-  border: 2px solid #a7f3d0;
+  background: var(--color-surface);
+  color: var(--color-success);
+  border: 2px solid var(--color-success-border);
 }

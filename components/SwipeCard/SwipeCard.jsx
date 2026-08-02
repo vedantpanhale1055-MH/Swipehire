@@ -51,26 +51,23 @@ export default function SwipeCard({ job, onSwipe, isTop }) {
   }
 
   const rotation = dragX / 20;
-  const opacity = isTop ? 1 : 0.6;
-  const scale = isTop ? 1 : 0.96;
 
   return (
     <div
       ref={cardRef}
       className={styles.card}
       style={{
-        transform: `translateX(${dragX}px) rotate(${rotation}deg) scale(${scale})`,
-        opacity,
+        transform: `translateX(${dragX}px) rotate(${rotation}deg)`,
         cursor: isTop ? (dragging ? "grabbing" : "grab") : "default",
-        transition: dragging ? "none" : "transform 0.25s ease, opacity 0.25s ease",
+        transition: dragging ? "none" : "transform 0.25s ease",
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
     >
-      {dragX > 40 && <div className={`${styles.stamp} ${styles.saveStamp}`}>SAVE</div>}
-      {dragX < -40 && <div className={`${styles.stamp} ${styles.rejectStamp}`}>SKIP</div>}
+      {isTop && dragX > 40 && <div className={`${styles.stamp} ${styles.saveStamp}`}>SAVE</div>}
+      {isTop && dragX < -40 && <div className={`${styles.stamp} ${styles.rejectStamp}`}>SKIP</div>}
 
       <div className={styles.header}>
         <div>
@@ -82,21 +79,27 @@ export default function SwipeCard({ job, onSwipe, isTop }) {
         )}
       </div>
 
-      <div className={styles.meta}>
-        <span>{job.location}</span>
-        <span className={styles.dot}>•</span>
-        <span>{job.salary}</span>
-      </div>
+      {/* Background (non-top) cards only show the header — description/tags/meta
+          are hidden so overlapping stacked cards don't show bleeding text. */}
+      {isTop && (
+        <>
+          <div className={styles.meta}>
+            <span>{job.location}</span>
+            <span className={styles.dot}>•</span>
+            <span>{job.salary}</span>
+          </div>
 
-      <p className={styles.description}>{job.description}</p>
+          <p className={styles.description}>{job.description}</p>
 
-      <div className={styles.tags}>
-        {job.tags?.map((tag) => (
-          <span key={tag} className={styles.tag}>
-            {tag}
-          </span>
-        ))}
-      </div>
+          <div className={styles.tags}>
+            {job.tags?.map((tag) => (
+              <span key={tag} className={styles.tag}>
+                {tag}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

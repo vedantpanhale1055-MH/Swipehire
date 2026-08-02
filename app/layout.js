@@ -1,5 +1,6 @@
 // app/layout.js
-// UPDATE — replaces the layout.js content you pasted earlier, adds AuthProvider wrapper.
+import "./globals.css";
+import "@/lib/tokens.css";
 
 import { AuthProvider } from '@/components/AuthProvider';
 

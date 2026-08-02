@@ -11,8 +11,9 @@ export default function DiscoverPage() {
   const [savedIds, setSavedIds] = useState([]);
   const [rejectedIds, setRejectedIds] = useState([]);
 
-  const remaining = jobs.slice(index, index + 3); // top 3 for stack effect
+  const stack = jobs.slice(index, index + 3); // top 3 for stack effect
   const currentJob = jobs[index];
+  const isFinished = index >= jobs.length;
 
   function handleSwipe(direction) {
     if (!currentJob) return;
@@ -25,8 +26,6 @@ export default function DiscoverPage() {
     setIndex((prev) => prev + 1);
   }
 
-  const isFinished = index >= jobs.length;
-
   return (
     <div className={styles.page}>
       <h1 className={styles.heading}>Discover</h1>
@@ -38,14 +37,23 @@ export default function DiscoverPage() {
             <span>{savedIds.length} saved · {rejectedIds.length} skipped</span>
           </div>
         ) : (
-          remaining
+          stack
             .map((job, i) => (
-              <SwipeCard
+              <div
                 key={job.id}
-                job={job}
-                isTop={i === 0}
-                onSwipe={i === 0 ? handleSwipe : () => {}}
-              />
+                className={styles.cardSlot}
+                style={{
+                  transform: `translateY(${i * 10}px) scale(${1 - i * 0.04})`,
+                  zIndex: stack.length - i,
+                  transition: "transform 0.25s ease",
+                }}
+              >
+                <SwipeCard
+                  job={job}
+                  isTop={i === 0}
+                  onSwipe={i === 0 ? handleSwipe : () => {}}
+                />
+              </div>
             ))
             .reverse()
         )}
