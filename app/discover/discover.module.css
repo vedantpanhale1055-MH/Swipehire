@@ -82,3 +82,21 @@
   color: var(--color-success);
   border: 2px solid var(--color-success-border);
 }
+
+.undoBtn {
+  width: 44px;
+  height: 44px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  border: 2px solid var(--color-border);
+  align-self: center;
+}
+
+.undoBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.undoBtn:disabled:active {
+  transform: none;
+}

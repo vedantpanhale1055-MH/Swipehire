@@ -10,6 +10,7 @@ export default function DiscoverPage() {
   const [index, setIndex] = useState(0);
   const [savedIds, setSavedIds] = useState([]);
   const [rejectedIds, setRejectedIds] = useState([]);
+  const [history, setHistory] = useState([]); // stack of { jobId, direction }
 
   const stack = jobs.slice(index, index + 3); // top 3 for stack effect
   const currentJob = jobs[index];
@@ -23,8 +24,26 @@ export default function DiscoverPage() {
     } else {
       setRejectedIds((prev) => [...prev, currentJob.id]);
     }
+    setHistory((prev) => [...prev, { jobId: currentJob.id, direction }]);
     setIndex((prev) => prev + 1);
   }
+
+  function handleUndo() {
+    if (history.length === 0 || index === 0) return;
+
+    const last = history[history.length - 1];
+
+    if (last.direction === "right") {
+      setSavedIds((prev) => prev.filter((id) => id !== last.jobId));
+    } else {
+      setRejectedIds((prev) => prev.filter((id) => id !== last.jobId));
+    }
+
+    setHistory((prev) => prev.slice(0, -1));
+    setIndex((prev) => prev - 1);
+  }
+
+  const canUndo = history.length > 0 && index > 0;
 
   return (
     <div className={styles.page}>
@@ -59,24 +78,34 @@ export default function DiscoverPage() {
         )}
       </div>
 
-      {!isFinished && (
-        <div className={styles.actions}>
-          <button
-            className={`${styles.actionBtn} ${styles.rejectBtn}`}
-            onClick={() => handleSwipe("left")}
-            aria-label="Reject"
-          >
-            ✕
-          </button>
-          <button
-            className={`${styles.actionBtn} ${styles.saveBtn}`}
-            onClick={() => handleSwipe("right")}
-            aria-label="Save"
-          >
-            ♥
-          </button>
-        </div>
-      )}
+      <div className={styles.actions}>
+        <button
+          className={`${styles.actionBtn} ${styles.undoBtn}`}
+          onClick={handleUndo}
+          disabled={!canUndo}
+          aria-label="Undo"
+        >
+          ↺
+        </button>
+        {!isFinished && (
+          <>
+            <button
+              className={`${styles.actionBtn} ${styles.rejectBtn}`}
+              onClick={() => handleSwipe("left")}
+              aria-label="Reject"
+            >
+              ✕
+            </button>
+            <button
+              className={`${styles.actionBtn} ${styles.saveBtn}`}
+              onClick={() => handleSwipe("right")}
+              aria-label="Save"
+            >
+              ♥
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
