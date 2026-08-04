@@ -1,5 +1,5 @@
-import Sidebar from '@/components/Sidebar';
-import styles from './page.module.css';
+import Sidebar from '@/components/Sidebar/Sidebar';
+import styles from './calendar.module.css';
 
 export default function CalendarPage() {
   return (
