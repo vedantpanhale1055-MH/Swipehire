@@ -1,20 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SwipeCard from "@/components/SwipeCard/SwipeCard";
-import mockJobs from "@/lib/mockJobs";
 import styles from "./discover.module.css";
 
 export default function DiscoverPage() {
-  const [jobs] = useState(mockJobs);
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [index, setIndex] = useState(0);
   const [savedIds, setSavedIds] = useState([]);
   const [rejectedIds, setRejectedIds] = useState([]);
   const [history, setHistory] = useState([]); // stack of { jobId, direction }
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadJobs() {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch("/api/jobs");
+        if (!res.ok) {
+          throw new Error(`Request failed: ${res.status}`);
+        }
+        const { jobs: fetchedJobs } = await res.json();
+        if (!cancelled) {
+          setJobs(fetchedJobs);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.message || "Failed to load jobs");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadJobs();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const stack = jobs.slice(index, index + 3); // top 3 for stack effect
   const currentJob = jobs[index];
-  const isFinished = index >= jobs.length;
+  const isFinished = !loading && !error && index >= jobs.length;
 
   function handleSwipe(direction) {
     if (!currentJob) return;
@@ -50,7 +84,16 @@ export default function DiscoverPage() {
       <h1 className={styles.heading}>Discover</h1>
 
       <div className={styles.stackWrapper}>
-        {isFinished ? (
+        {loading ? (
+          <div className={styles.emptyState}>
+            <p>Loading jobs…</p>
+          </div>
+        ) : error ? (
+          <div className={styles.emptyState}>
+            <p>Couldn&apos;t load jobs.</p>
+            <span>{error}</span>
+          </div>
+        ) : isFinished ? (
           <div className={styles.emptyState}>
             <p>You&apos;re all caught up.</p>
             <span>{savedIds.length} saved · {rejectedIds.length} skipped</span>
@@ -87,7 +130,7 @@ export default function DiscoverPage() {
         >
           ↺
         </button>
-        {!isFinished && (
+        {!isFinished && !loading && !error && (
           <>
             <button
               className={`${styles.actionBtn} ${styles.rejectBtn}`}
