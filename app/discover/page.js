@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import SwipeCard from "@/components/SwipeCard/SwipeCard";
+import { saveJob, getCurrentUser } from "@/lib/supabase";
 import styles from "./discover.module.css";
 
 export default function DiscoverPage() {
@@ -55,11 +56,31 @@ export default function DiscoverPage() {
 
     if (direction === "right") {
       setSavedIds((prev) => [...prev, currentJob.id]);
+      persistSavedJob(currentJob);
     } else {
       setRejectedIds((prev) => [...prev, currentJob.id]);
     }
     setHistory((prev) => [...prev, { jobId: currentJob.id, direction }]);
     setIndex((prev) => prev + 1);
+  }
+
+  async function persistSavedJob(job) {
+    try {
+      const user = await getCurrentUser();
+      if (!user) {
+        console.warn("No logged-in user — skipping save to Supabase.");
+        return;
+      }
+      await saveJob(user.id, {
+        title: job.title,
+        company: job.company,
+        location: job.location,
+        description: job.fullDescription || job.description,
+        url: job.url,
+      });
+    } catch (err) {
+      console.error("Failed to save job:", err);
+    }
   }
 
   function handleUndo() {
