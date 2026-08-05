@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { label: "Discover", icon: "💫", href: "/discover" },
   { label: "Jobs", icon: "🔍", href: "/jobs" },
   { label: "Applications", icon: "💼", href: "/applications" },
+  { label: "Resume", icon: "📝", href: "/resume-builder" },
   { label: "Calendar", icon: "📅", href: "/calendar" },
   { label: "Documents", icon: "📄", href: "/documents" },
   { label: "Stats", icon: "📊", href: "/stats" },
