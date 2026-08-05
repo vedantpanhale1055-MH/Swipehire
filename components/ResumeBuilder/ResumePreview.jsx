@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "./ResumePreview.module.css";
+import styles from "./ResumeBuilder.module.css";
 
 /**
  * Props:
@@ -12,8 +12,10 @@ import styles from "./ResumePreview.module.css";
 export default function ResumePreview({ profile }) {
   if (!profile) {
     return (
-      <div className={styles.empty}>
-        Fill out the form and click Save to see your resume preview here.
+      <div className={styles.preview}>
+        <p className={styles.previewEmpty}>
+          Fill out the form and click Save to see your resume preview here.
+        </p>
       </div>
     );
   }
@@ -41,140 +43,119 @@ export default function ResumePreview({ profile }) {
 
   if (!hasAnyContent) {
     return (
-      <div className={styles.empty}>
-        Fill out the form and click Save to see your resume preview here.
+      <div className={styles.preview}>
+        <p className={styles.previewEmpty}>
+          Fill out the form and click Save to see your resume preview here.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className={styles.resume}>
-      <header className={styles.header}>
-        <h1 className={styles.name}>{full_name || "Your Name"}</h1>
-        <div className={styles.links}>
+    <div className={styles.preview}>
+      <div>
+        <div className={styles.previewName}>{full_name || "Your Name"}</div>
+        <div className={styles.previewLinks}>
           {github_url && (
-            <a
-              href={github_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.link}
-            >
+            <a href={github_url} target="_blank" rel="noopener noreferrer">
               GitHub
             </a>
           )}
           {linkedin_url && (
-            <a
-              href={linkedin_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.link}
-            >
+            <a href={linkedin_url} target="_blank" rel="noopener noreferrer">
               LinkedIn
             </a>
           )}
         </div>
-      </header>
+      </div>
 
       {skills.length > 0 && (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Skills</h2>
-          <div className={styles.skills}>
+        <div className={styles.previewSection}>
+          <div className={styles.previewSectionTitle}>Skills</div>
+          <div className={styles.chipRow}>
             {skills.map((skill, i) => (
-              <span key={i} className={styles.skillChip}>
+              <span key={i} className={styles.chip}>
                 {skill}
               </span>
             ))}
           </div>
-        </section>
+        </div>
       )}
 
       {experience.length > 0 && (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Experience</h2>
+        <div className={styles.previewSection}>
+          <div className={styles.previewSectionTitle}>Experience</div>
           {experience.map((row, i) => (
-            <div key={i} className={styles.entry}>
-              <div className={styles.entryHeader}>
-                <span className={styles.entryTitle}>
-                  {row.role || "Role"}
-                  {row.company ? ` · ${row.company}` : ""}
-                </span>
-                <span className={styles.entryDates}>
-                  {row.startDate}
-                  {row.startDate || row.endDate ? " – " : ""}
-                  {row.endDate}
-                </span>
+            <div key={i} className={styles.previewItem}>
+              <div className={styles.previewItemTitle}>
+                {row.role || "Role"}
+                {row.company ? ` · ${row.company}` : ""}
+              </div>
+              <div className={styles.previewItemMeta}>
+                {row.startDate}
+                {row.startDate || row.endDate ? " – " : ""}
+                {row.endDate}
               </div>
               {row.description && (
-                <p className={styles.entryDescription}>{row.description}</p>
+                <div className={styles.previewItemBody}>{row.description}</div>
               )}
             </div>
           ))}
-        </section>
+        </div>
       )}
 
       {education.length > 0 && (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Education</h2>
+        <div className={styles.previewSection}>
+          <div className={styles.previewSectionTitle}>Education</div>
           {education.map((row, i) => (
-            <div key={i} className={styles.entry}>
-              <div className={styles.entryHeader}>
-                <span className={styles.entryTitle}>
-                  {row.degree || "Degree"}
-                  {row.field ? `, ${row.field}` : ""}
-                  {row.school ? ` · ${row.school}` : ""}
-                </span>
-                <span className={styles.entryDates}>
-                  {row.startDate}
-                  {row.startDate || row.endDate ? " – " : ""}
-                  {row.endDate}
-                </span>
+            <div key={i} className={styles.previewItem}>
+              <div className={styles.previewItemTitle}>
+                {row.degree || "Degree"}
+                {row.field ? `, ${row.field}` : ""}
+                {row.school ? ` · ${row.school}` : ""}
+              </div>
+              <div className={styles.previewItemMeta}>
+                {row.startDate}
+                {row.startDate || row.endDate ? " – " : ""}
+                {row.endDate}
               </div>
             </div>
           ))}
-        </section>
+        </div>
       )}
 
       {certifications.length > 0 && (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Certifications</h2>
+        <div className={styles.previewSection}>
+          <div className={styles.previewSectionTitle}>Certifications</div>
           {certifications.map((row, i) => (
-            <div key={i} className={styles.entry}>
-              <div className={styles.entryHeader}>
-                <span className={styles.entryTitle}>
-                  {row.name}
-                  {row.issuer ? ` · ${row.issuer}` : ""}
-                </span>
-                <span className={styles.entryDates}>{row.date}</span>
+            <div key={i} className={styles.previewItem}>
+              <div className={styles.previewItemTitle}>
+                {row.name}
+                {row.issuer ? ` · ${row.issuer}` : ""}
               </div>
+              <div className={styles.previewItemMeta}>{row.date}</div>
             </div>
           ))}
-        </section>
+        </div>
       )}
 
       {projects.length > 0 && (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Projects</h2>
+        <div className={styles.previewSection}>
+          <div className={styles.previewSectionTitle}>Projects</div>
           {projects.map((row, i) => (
-            <div key={i} className={styles.entry}>
-              <div className={styles.entryHeader}>
-                <span className={styles.entryTitle}>{row.name}</span>
-                {row.link && (
-                  <a
-                    href={row.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.link}
-                  >
-                    View
-                  </a>
-                )}
-              </div>
+            <div key={i} className={styles.previewItem}>
+              <div className={styles.previewItemTitle}>{row.name}</div>
+              {row.link && (
+                <a href={row.link} target="_blank" rel="noopener noreferrer">
+                  View
+                </a>
+              )}
               {row.description && (
-                <p className={styles.entryDescription}>{row.description}</p>
+                <div className={styles.previewItemBody}>{row.description}</div>
               )}
             </div>
           ))}
-        </section>
+        </div>
       )}
     </div>
   );
