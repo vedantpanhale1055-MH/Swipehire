@@ -10,6 +10,18 @@ function toBullets(text) {
     .filter(Boolean);
 }
 
+function getInitials(name) {
+  if (!name) return "";
+  const parts = name.trim().split(/\s+/);
+  const first = parts[0]?.[0] || "";
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
+  return (first + last).toUpperCase();
+}
+
+function cleanUrl(url) {
+  return url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+}
+
 export default function ResumePreview({ profile }) {
   if (!profile) {
     return (
@@ -54,24 +66,33 @@ export default function ResumePreview({ profile }) {
 
   return (
     <div className={styles.preview}>
-      <header className={styles.previewHeader}>
-        <div className={styles.previewName}>{full_name || "Your Name"}</div>
-        {(github_url || linkedin_url) && (
-          <div className={styles.previewContactLine}>
-            {github_url && (
-              <a href={github_url} target="_blank" rel="noopener noreferrer">
-                {github_url.replace(/^https?:\/\//, "")}
-              </a>
-            )}
-            {github_url && linkedin_url && <span> · </span>}
-            {linkedin_url && (
-              <a href={linkedin_url} target="_blank" rel="noopener noreferrer">
-                {linkedin_url.replace(/^https?:\/\//, "")}
-              </a>
-            )}
-          </div>
-        )}
-      </header>
+      <div className={styles.previewHeaderBand}>
+        <div className={styles.previewAvatar}>{getInitials(full_name) || "?"}</div>
+        <div className={styles.previewHeaderText}>
+          <div className={styles.previewName}>{full_name || "Your Name"}</div>
+          {(github_url || linkedin_url) && (
+            <div className={styles.previewContactLine}>
+              {github_url && (
+                <span>
+                  <strong>GitHub:</strong>{" "}
+                  <a href={github_url} target="_blank" rel="noopener noreferrer">
+                    {cleanUrl(github_url)}
+                  </a>
+                </span>
+              )}
+              {github_url && linkedin_url && <span className={styles.previewContactSep}>|</span>}
+              {linkedin_url && (
+                <span>
+                  <strong>LinkedIn:</strong>{" "}
+                  <a href={linkedin_url} target="_blank" rel="noopener noreferrer">
+                    {cleanUrl(linkedin_url)}
+                  </a>
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
       <div className={styles.previewBody}>
         <div className={styles.previewCol}>
@@ -113,7 +134,7 @@ export default function ResumePreview({ profile }) {
                         {" "}
                         –{" "}
                         <a href={row.link} target="_blank" rel="noopener noreferrer">
-                          {row.link.replace(/^https?:\/\//, "")}
+                          {cleanUrl(row.link)}
                         </a>
                       </>
                     )}
