@@ -11,9 +11,14 @@ import styles from "./ResumeBuilder.module.css";
  */
 export default function ResumeForm({ initialProfile, onSave, saving }) {
   const [fullName, setFullName] = useState("");
+  const [location, setLocation] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [summary, setSummary] = useState("");
   const [skillsInput, setSkillsInput] = useState("");
+  const [languagesInput, setLanguagesInput] = useState("");
   const [experience, setExperience] = useState([]);
   const [education, setEducation] = useState([]);
   const [certifications, setCertifications] = useState([]);
@@ -22,9 +27,14 @@ export default function ResumeForm({ initialProfile, onSave, saving }) {
   useEffect(() => {
     if (!initialProfile) return;
     setFullName(initialProfile.full_name || "");
+    setLocation(initialProfile.location || "");
+    setPhone(initialProfile.phone || "");
+    setEmail(initialProfile.email || "");
     setGithubUrl(initialProfile.github_url || "");
     setLinkedinUrl(initialProfile.linkedin_url || "");
+    setSummary(initialProfile.summary || "");
     setSkillsInput((initialProfile.skills || []).join(", "));
+    setLanguagesInput((initialProfile.languages || []).join(", "));
     setExperience(initialProfile.experience || []);
     setEducation(initialProfile.education || []);
     setCertifications(initialProfile.certifications || []);
@@ -51,12 +61,21 @@ export default function ResumeForm({ initialProfile, onSave, saving }) {
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
+    const languages = languagesInput
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
 
     onSave({
       full_name: fullName,
+      location,
+      phone,
+      email,
       github_url: githubUrl,
       linkedin_url: linkedinUrl,
+      summary,
       skills,
+      languages,
       experience,
       education,
       certifications,
@@ -78,6 +97,33 @@ export default function ResumeForm({ initialProfile, onSave, saving }) {
           />
         </label>
         <label className={styles.label}>
+          Location
+          <input
+            className={styles.input}
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="City, State"
+          />
+        </label>
+        <label className={styles.label}>
+          Phone
+          <input
+            className={styles.input}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="Phone number"
+          />
+        </label>
+        <label className={styles.label}>
+          Email
+          <input
+            className={styles.input}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+          />
+        </label>
+        <label className={styles.label}>
           GitHub URL
           <input
             className={styles.input}
@@ -93,6 +139,19 @@ export default function ResumeForm({ initialProfile, onSave, saving }) {
             value={linkedinUrl}
             onChange={(e) => setLinkedinUrl(e.target.value)}
             placeholder="https://linkedin.com/in/yourusername"
+          />
+        </label>
+      </section>
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Career Objective</h2>
+        <label className={styles.label}>
+          Summary
+          <textarea
+            className={styles.textarea}
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+            placeholder="A short summary of your goals and experience"
           />
         </label>
       </section>
@@ -285,7 +344,12 @@ export default function ResumeForm({ initialProfile, onSave, saving }) {
             type="button"
             className={styles.addBtn}
             onClick={() =>
-              addRow(setProjects, { name: "", description: "", link: "" })
+              addRow(setProjects, {
+                name: "",
+                technologies: "",
+                description: "",
+                link: "",
+              })
             }
           >
             + Add
@@ -298,6 +362,12 @@ export default function ResumeForm({ initialProfile, onSave, saving }) {
               placeholder="Project name"
               value={row.name}
               onChange={(e) => updateRow(setProjects, i, "name", e.target.value)}
+            />
+            <input
+              className={styles.input}
+              placeholder="Technologies (e.g. HTML, CSS, JavaScript)"
+              value={row.technologies || ""}
+              onChange={(e) => updateRow(setProjects, i, "technologies", e.target.value)}
             />
             <textarea
               className={styles.textarea}
@@ -320,6 +390,19 @@ export default function ResumeForm({ initialProfile, onSave, saving }) {
             </button>
           </div>
         ))}
+      </section>
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Languages</h2>
+        <label className={styles.label}>
+          Comma-separated
+          <input
+            className={styles.input}
+            value={languagesInput}
+            onChange={(e) => setLanguagesInput(e.target.value)}
+            placeholder="English, Hindi, Marathi"
+          />
+        </label>
       </section>
 
       <button type="submit" className={styles.saveBtn} disabled={saving}>

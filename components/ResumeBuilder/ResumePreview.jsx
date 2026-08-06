@@ -10,14 +10,6 @@ function toBullets(text) {
     .filter(Boolean);
 }
 
-function getInitials(name) {
-  if (!name) return "";
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] || "";
-  const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
-  return (first + last).toUpperCase();
-}
-
 function cleanUrl(url) {
   return url.replace(/^https?:\/\//, "").replace(/\/$/, "");
 }
@@ -35,9 +27,14 @@ export default function ResumePreview({ profile }) {
 
   const {
     full_name,
+    location,
+    phone,
+    email,
     github_url,
     linkedin_url,
+    summary,
     skills = [],
+    languages = [],
     experience = [],
     education = [],
     certifications = [],
@@ -46,9 +43,14 @@ export default function ResumePreview({ profile }) {
 
   const hasAnyContent =
     full_name ||
+    location ||
+    phone ||
+    email ||
     github_url ||
     linkedin_url ||
+    summary ||
     skills.length ||
+    languages.length ||
     experience.length ||
     education.length ||
     certifications.length ||
@@ -64,141 +66,147 @@ export default function ResumePreview({ profile }) {
     );
   }
 
+  const contactParts = [
+    location,
+    phone && `Phone: ${phone}`,
+    email && `Email: ${email}`,
+    github_url && `GitHub: ${cleanUrl(github_url)}`,
+    linkedin_url && `LinkedIn: ${cleanUrl(linkedin_url)}`,
+  ].filter(Boolean);
+
   return (
     <div className={styles.preview}>
-      <div className={styles.previewHeaderBand}>
-        <div className={styles.previewAvatar}>{getInitials(full_name) || "?"}</div>
-        <div className={styles.previewHeaderText}>
-          <div className={styles.previewName}>{full_name || "Your Name"}</div>
-          {(github_url || linkedin_url) && (
-            <div className={styles.previewContactLine}>
-              {github_url && (
-                <span>
-                  <strong>GitHub:</strong>{" "}
-                  <a href={github_url} target="_blank" rel="noopener noreferrer">
-                    {cleanUrl(github_url)}
-                  </a>
-                </span>
-              )}
-              {github_url && linkedin_url && <span className={styles.previewContactSep}>|</span>}
-              {linkedin_url && (
-                <span>
-                  <strong>LinkedIn:</strong>{" "}
-                  <a href={linkedin_url} target="_blank" rel="noopener noreferrer">
-                    {cleanUrl(linkedin_url)}
-                  </a>
-                </span>
+      <header className={styles.previewHeader}>
+        <div className={styles.previewName}>{full_name || "Your Name"}</div>
+        {contactParts.length > 0 && (
+          <div className={styles.previewContactLine}>
+            {contactParts.join("  |  ")}
+          </div>
+        )}
+      </header>
+
+      {summary && (
+        <section className={styles.previewBlock}>
+          <h2 className={styles.previewBlockTitle}>Career Objective</h2>
+          <p className={styles.previewParagraph}>{summary}</p>
+        </section>
+      )}
+
+      {education.length > 0 && (
+        <section className={styles.previewBlock}>
+          <h2 className={styles.previewBlockTitle}>Education</h2>
+          {education.map((row, i) => (
+            <div key={i} className={styles.previewEntry}>
+              <div className={styles.previewEntryTitle}>
+                {row.degree}
+                {row.field ? ` – ${row.field}` : ""}
+              </div>
+              <div className={styles.previewEntrySub}>{row.school}</div>
+              <div className={styles.previewEntryDates}>
+                {row.startDate}
+                {row.startDate || row.endDate ? " – " : ""}
+                {row.endDate}
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {skills.length > 0 && (
+        <section className={styles.previewBlock}>
+          <h2 className={styles.previewBlockTitle}>Technical Skills</h2>
+          <ul className={styles.previewSkillsGrid}>
+            {skills.map((skill, i) => (
+              <li key={i}>{skill}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {experience.length > 0 && (
+        <section className={styles.previewBlock}>
+          <h2 className={styles.previewBlockTitle}>Experience</h2>
+          {experience.map((row, i) => (
+            <div key={i} className={styles.previewEntry}>
+              <div className={styles.previewEntryTitle}>
+                {row.role || "Role"}
+                {row.company ? ` · ${row.company}` : ""}
+              </div>
+              <div className={styles.previewEntryDates}>
+                {row.startDate}
+                {row.startDate || row.endDate ? " – " : ""}
+                {row.endDate}
+              </div>
+              {row.description && (
+                <ul className={styles.previewBullets}>
+                  {toBullets(row.description).map((line, j) => (
+                    <li key={j}>{line}</li>
+                  ))}
+                </ul>
               )}
             </div>
-          )}
-        </div>
-      </div>
+          ))}
+        </section>
+      )}
 
-      <div className={styles.previewBody}>
-        <div className={styles.previewCol}>
-          {experience.length > 0 && (
-            <section className={styles.previewBlock}>
-              <h2 className={styles.previewBlockTitle}>Work History</h2>
-              {experience.map((row, i) => (
-                <div key={i} className={styles.previewEntry}>
-                  <div className={styles.previewEntryTitle}>
-                    {row.company}
-                    {row.role ? ` – ${row.role}` : ""}
-                  </div>
-                  <div className={styles.previewEntryDates}>
-                    {row.startDate}
-                    {row.startDate || row.endDate ? " – " : ""}
-                    {row.endDate}
-                  </div>
-                  {row.description && (
-                    <ul className={styles.previewBullets}>
-                      {toBullets(row.description).map((line, j) => (
-                        <li key={j}>{line}</li>
-                      ))}
-                    </ul>
-                  )}
+      {projects.length > 0 && (
+        <section className={styles.previewBlock}>
+          <h2 className={styles.previewBlockTitle}>Projects</h2>
+          {projects.map((row, i) => (
+            <div key={i} className={styles.previewEntry}>
+              <div className={styles.previewEntryTitle}>
+                {row.name}
+                {row.link && (
+                  <>
+                    {" "}
+                    –{" "}
+                    <a href={row.link} target="_blank" rel="noopener noreferrer">
+                      {cleanUrl(row.link)}
+                    </a>
+                  </>
+                )}
+              </div>
+              {row.technologies && (
+                <div className={styles.previewEntrySub}>
+                  Technologies: {row.technologies}
                 </div>
-              ))}
-            </section>
-          )}
+              )}
+              {row.description && (
+                <ul className={styles.previewBullets}>
+                  {toBullets(row.description).map((line, j) => (
+                    <li key={j}>{line}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </section>
+      )}
 
-          {projects.length > 0 && (
-            <section className={styles.previewBlock}>
-              <h2 className={styles.previewBlockTitle}>Projects</h2>
-              {projects.map((row, i) => (
-                <div key={i} className={styles.previewEntry}>
-                  <div className={styles.previewEntryTitle}>
-                    {row.name}
-                    {row.link && (
-                      <>
-                        {" "}
-                        –{" "}
-                        <a href={row.link} target="_blank" rel="noopener noreferrer">
-                          {cleanUrl(row.link)}
-                        </a>
-                      </>
-                    )}
-                  </div>
-                  {row.description && (
-                    <ul className={styles.previewBullets}>
-                      {toBullets(row.description).map((line, j) => (
-                        <li key={j}>{line}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </section>
-          )}
-        </div>
+      {certifications.length > 0 && (
+        <section className={styles.previewBlock}>
+          <h2 className={styles.previewBlockTitle}>Certifications</h2>
+          <ul className={styles.previewBullets}>
+            {certifications.map((row, i) => (
+              <li key={i}>
+                {row.name}
+                {row.issuer ? ` – ${row.issuer}` : ""}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
-        <div className={styles.previewColNarrow}>
-          {skills.length > 0 && (
-            <section className={styles.previewBlock}>
-              <h2 className={styles.previewBlockTitle}>Skills</h2>
-              <ul className={styles.previewSideList}>
-                {skills.map((skill, i) => (
-                  <li key={i}>{skill}</li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {certifications.length > 0 && (
-            <section className={styles.previewBlock}>
-              <h2 className={styles.previewBlockTitle}>Certifications</h2>
-              <ul className={styles.previewSideList}>
-                {certifications.map((row, i) => (
-                  <li key={i}>
-                    {row.name}
-                    {row.issuer ? ` – ${row.issuer}` : ""}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {education.length > 0 && (
-            <section className={styles.previewBlock}>
-              <h2 className={styles.previewBlockTitle}>Education</h2>
-              {education.map((row, i) => (
-                <div key={i} className={styles.previewEntry}>
-                  <div className={styles.previewEntryTitle}>{row.school}</div>
-                  <div className={styles.previewEntryDates}>
-                    {row.startDate}
-                    {row.startDate || row.endDate ? " – " : ""}
-                    {row.endDate}
-                  </div>
-                  <div className={styles.previewEntrySub}>
-                    {row.degree}
-                    {row.field ? `, ${row.field}` : ""}
-                  </div>
-                </div>
-              ))}
-            </section>
-          )}
-        </div>
-      </div>
+      {languages.length > 0 && (
+        <section className={styles.previewBlock}>
+          <h2 className={styles.previewBlockTitle}>Languages</h2>
+          <ul className={styles.previewSkillsGrid}>
+            {languages.map((lang, i) => (
+              <li key={i}>{lang}</li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }
