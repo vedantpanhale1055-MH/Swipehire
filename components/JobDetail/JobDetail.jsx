@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import styles from "./JobDetail.module.css";
+import TailoredResumeModal from "./TailoredResumeModal";
 
 /**
  * Presentational job detail view.
@@ -9,6 +11,8 @@ import styles from "./JobDetail.module.css";
  *  - onBack(): called when the back arrow is pressed
  */
 export default function JobDetail({ job, onBack }) {
+  const [showTailorModal, setShowTailorModal] = useState(false);
+
   if (!job) return null;
 
   const score = typeof job.matchScore === "number" ? job.matchScore : null;
@@ -95,7 +99,19 @@ export default function JobDetail({ job, onBack }) {
         </section>
       )}
 
-      <button className={styles.tailorBtn}>📄 Tailor my resume</button>
+      <button
+        className={styles.tailorBtn}
+        onClick={() => setShowTailorModal(true)}
+      >
+        📄 Tailor my resume
+      </button>
+
+      {showTailorModal && (
+        <TailoredResumeModal
+          job={job}
+          onClose={() => setShowTailorModal(false)}
+        />
+      )}
     </div>
   );
 }
