@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getProfile } from "@/lib/supabase"; // adjust name if your actual export differs
+import { getCurrentUser, getProfile } from "@/lib/supabase";
 import { buildResumeText } from "@/lib/resumeText";
 import styles from "./TailoredResumeModal.module.css";
 
@@ -20,7 +20,12 @@ export default function TailoredResumeModal({ job, onClose }) {
 
     async function run() {
       try {
-        const profile = await getProfile();
+        const user = await getCurrentUser();
+        if (!user) {
+          throw new Error("Please log in to tailor your resume.");
+        }
+
+        const profile = await getProfile(user.id);
         if (!profile) {
           throw new Error("No profile found — fill out Resume Builder first.");
         }
