@@ -1,11 +1,38 @@
-// app/page.js
-// Home page — placeholder until SwipeCard/KanbanBoard components are wired in.
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getCurrentUser } from "@/lib/supabase";
 
 export default function Home() {
+  const router = useRouter();
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function checkAuth() {
+      const user = await getCurrentUser();
+      if (cancelled) return;
+
+      if (user) {
+        router.replace("/dashboard");
+      } else {
+        router.replace("/login");
+      }
+    }
+
+    checkAuth();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  // Brief loading state while we check auth and redirect
   return (
-    <main style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>SwipeHire</h1>
-      <p>AI-powered job discovery, matching, and application tracker.</p>
+    <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
+      {checking && <p>Loading…</p>}
     </main>
   );
 }
