@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import SwipeCard from "@/components/SwipeCard/SwipeCard";
+import Sidebar from "@/components/Sidebar/Sidebar";
 import { saveJob, getCurrentUser } from "@/lib/supabase";
 import styles from "./discover.module.css";
 
@@ -101,74 +102,78 @@ export default function DiscoverPage() {
   const canUndo = history.length > 0 && index > 0;
 
   return (
-    <div className={styles.page}>
-      <h1 className={styles.heading}>Discover</h1>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      <Sidebar />
 
-      <div className={styles.stackWrapper}>
-        {loading ? (
-          <div className={styles.emptyState}>
-            <p>Loading jobs…</p>
-          </div>
-        ) : error ? (
-          <div className={styles.emptyState}>
-            <p>Couldn&apos;t load jobs.</p>
-            <span>{error}</span>
-          </div>
-        ) : isFinished ? (
-          <div className={styles.emptyState}>
-            <p>You&apos;re all caught up.</p>
-            <span>{savedIds.length} saved · {rejectedIds.length} skipped</span>
-          </div>
-        ) : (
-          stack
-            .map((job, i) => (
-              <div
-                key={job.id}
-                className={styles.cardSlot}
-                style={{
-                  transform: `translateY(${i * 10}px) scale(${1 - i * 0.04})`,
-                  zIndex: stack.length - i,
-                  transition: "transform 0.25s ease",
-                }}
+      <div className={styles.page} style={{ flex: 1 }}>
+        <h1 className={styles.heading}>Discover</h1>
+
+        <div className={styles.stackWrapper}>
+          {loading ? (
+            <div className={styles.emptyState}>
+              <p>Loading jobs…</p>
+            </div>
+          ) : error ? (
+            <div className={styles.emptyState}>
+              <p>Couldn&apos;t load jobs.</p>
+              <span>{error}</span>
+            </div>
+          ) : isFinished ? (
+            <div className={styles.emptyState}>
+              <p>You&apos;re all caught up.</p>
+              <span>{savedIds.length} saved · {rejectedIds.length} skipped</span>
+            </div>
+          ) : (
+            stack
+              .map((job, i) => (
+                <div
+                  key={job.id}
+                  className={styles.cardSlot}
+                  style={{
+                    transform: `translateY(${i * 10}px) scale(${1 - i * 0.04})`,
+                    zIndex: stack.length - i,
+                    transition: "transform 0.25s ease",
+                  }}
+                >
+                  <SwipeCard
+                    job={job}
+                    isTop={i === 0}
+                    onSwipe={i === 0 ? handleSwipe : () => {}}
+                  />
+                </div>
+              ))
+              .reverse()
+          )}
+        </div>
+
+        <div className={styles.actions}>
+          <button
+            className={`${styles.actionBtn} ${styles.undoBtn}`}
+            onClick={handleUndo}
+            disabled={!canUndo}
+            aria-label="Undo"
+          >
+            ↺
+          </button>
+          {!isFinished && !loading && !error && (
+            <>
+              <button
+                className={`${styles.actionBtn} ${styles.rejectBtn}`}
+                onClick={() => handleSwipe("left")}
+                aria-label="Reject"
               >
-                <SwipeCard
-                  job={job}
-                  isTop={i === 0}
-                  onSwipe={i === 0 ? handleSwipe : () => {}}
-                />
-              </div>
-            ))
-            .reverse()
-        )}
-      </div>
-
-      <div className={styles.actions}>
-        <button
-          className={`${styles.actionBtn} ${styles.undoBtn}`}
-          onClick={handleUndo}
-          disabled={!canUndo}
-          aria-label="Undo"
-        >
-          ↺
-        </button>
-        {!isFinished && !loading && !error && (
-          <>
-            <button
-              className={`${styles.actionBtn} ${styles.rejectBtn}`}
-              onClick={() => handleSwipe("left")}
-              aria-label="Reject"
-            >
-              ✕
-            </button>
-            <button
-              className={`${styles.actionBtn} ${styles.saveBtn}`}
-              onClick={() => handleSwipe("right")}
-              aria-label="Save"
-            >
-              ♥
-            </button>
-          </>
-        )}
+                ✕
+              </button>
+              <button
+                className={`${styles.actionBtn} ${styles.saveBtn}`}
+                onClick={() => handleSwipe("right")}
+                aria-label="Save"
+              >
+                ♥
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
