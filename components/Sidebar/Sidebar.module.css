@@ -6,7 +6,10 @@
   display: flex;
   flex-direction: column;
   padding: var(--space-5) var(--space-4);
-  min-height: 100vh;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
 }
 
 .brand {
@@ -23,7 +26,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  flex: 1;
+  flex: 1 1 auto;
+  overflow-y: auto;
 }
 
 .navItem {
@@ -53,7 +57,8 @@
   gap: var(--space-3);
   padding: var(--space-3);
   border-top: 1px solid var(--color-border);
-  margin-top: var(--space-4);
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .userAvatar {
