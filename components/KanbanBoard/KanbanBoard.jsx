@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./KanbanBoard.module.css";
 import Sidebar from "@/components/Sidebar/Sidebar";
 import { getCurrentUser, getUserJobs, updateJobStatus } from "@/lib/supabase";
@@ -56,6 +57,8 @@ function groupJobsByStatus(rows) {
 }
 
 export default function KanbanBoard() {
+  const router = useRouter();
+
   const [columns, setColumns] = useState({
     saved: [],
     applied: [],
@@ -65,6 +68,7 @@ export default function KanbanBoard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dragCard, setDragCard] = useState(null); // { id, fromColumn }
+  const [wasDragged, setWasDragged] = useState(false); // suppress click right after a drag
 
   useEffect(() => {
     let cancelled = false;
@@ -106,6 +110,13 @@ export default function KanbanBoard() {
     setDragCard({ id: cardId, fromColumn });
   }
 
+  function handleDragEnd() {
+    // Mark that a drag just happened so the trailing click (native browsers
+    // fire click after drop in some cases) doesn't also trigger navigation.
+    setWasDragged(true);
+    setTimeout(() => setWasDragged(false), 0);
+  }
+
   function handleDrop(toColumn) {
     if (!dragCard) return;
     const { id, fromColumn } = dragCard;
@@ -143,6 +154,11 @@ export default function KanbanBoard() {
     });
   }
 
+  function handleCardClick(cardId) {
+    if (wasDragged) return;
+    router.push(`/jobs/${cardId}`);
+  }
+
   return (
     <div className={styles.layout}>
       <Sidebar />
@@ -178,6 +194,10 @@ export default function KanbanBoard() {
                       className={styles.card}
                       draggable
                       onDragStart={() => handleDragStart(card.id, col.key)}
+                      onDragEnd={handleDragEnd}
+                      onClick={() => handleCardClick(card.id)}
+                      role="button"
+                      tabIndex={0}
                     >
                       <div className={styles.cardTop}>
                         <div className={styles.cardIcon} style={{ background: card.color }}>
