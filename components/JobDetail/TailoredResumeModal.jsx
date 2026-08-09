@@ -1,19 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getCurrentUser, getProfile } from "@/lib/supabase";
+import { getCurrentUser, getProfile, saveTailoredResume } from "@/lib/supabase";
 import { buildResumeText } from "@/lib/resumeText";
 import styles from "./TailoredResumeModal.module.css";
 
 /**
  * Props:
- *  - job: the current job object (needs job.description)
+ *  - job: the current job object (needs job.id, job.description)
  *  - onClose(): closes the modal
  */
 export default function TailoredResumeModal({ job, onClose }) {
   const [status, setStatus] = useState("loading"); // loading | error | done
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
+  const [saveState, setSaveState] = useState("idle"); // idle | saving | saved | error
 
   useEffect(() => {
     let cancelled = false;
@@ -62,6 +63,17 @@ export default function TailoredResumeModal({ job, onClose }) {
     };
   }, [job]);
 
+  async function handleSave() {
+    setSaveState("saving");
+    try {
+      await saveTailoredResume(job.id, result);
+      setSaveState("saved");
+    } catch (err) {
+      console.error("Failed to save tailored resume:", err);
+      setSaveState("error");
+    }
+  }
+
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -107,6 +119,21 @@ export default function TailoredResumeModal({ job, onClose }) {
                   ))}
                 </div>
               </section>
+            )}
+
+            <button
+              className={styles.saveBtn}
+              onClick={handleSave}
+              disabled={saveState === "saving" || saveState === "saved"}
+            >
+              {saveState === "saved"
+                ? "✓ Saved to Documents"
+                : saveState === "saving"
+                ? "Saving…"
+                : "Save to Documents"}
+            </button>
+            {saveState === "error" && (
+              <p className={styles.saveError}>Couldn't save — try again.</p>
             )}
           </div>
         )}
