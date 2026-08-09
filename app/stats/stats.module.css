@@ -14,10 +14,127 @@
   font-size: var(--text-2xl);
   font-weight: 700;
   color: var(--color-text-primary);
-  margin: 0 0 var(--space-4);
+  margin: 0 0 4px;
+}
+
+.subheading {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-6);
 }
 
 .comingSoon {
   color: var(--color-text-muted);
   font-size: var(--text-base);
+}
+
+.sectionHeading {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: var(--space-6) 0 var(--space-3);
+}
+
+/* ---- Stat cards ---- */
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+@media (max-width: 780px) {
+  .statGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.statValue {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.statLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* ---- Funnel / bar list ---- */
+
+.funnelCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.funnelRow {
+  display: grid;
+  grid-template-columns: 110px 1fr 32px;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.funnelLabel {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.funnelBarTrack {
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  overflow: hidden;
+}
+
+.funnelBarFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-base);
+}
+
+.fill_saved {
+  background: var(--color-warning, #d97706);
+}
+
+.fill_applied {
+  background: var(--color-primary, #f97316);
+}
+
+.fill_interview {
+  background: #4f46e5;
+}
+
+.fill_offer {
+  background: var(--color-success, #059669);
+}
+
+.fill_company {
+  background: var(--color-primary, #f97316);
+}
+
+.funnelCount {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-align: right;
 }
