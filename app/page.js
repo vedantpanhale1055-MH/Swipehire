@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser } from "@/lib/supabase";
+import { getCurrentUser, getProfile, isProfileComplete } from "@/lib/supabase";
 
 export default function Home() {
   const router = useRouter();
@@ -16,7 +16,9 @@ export default function Home() {
       if (cancelled) return;
 
       if (user) {
-        router.replace("/dashboard");
+        const profile = await getProfile(user.id);
+        if (cancelled) return;
+        router.replace(isProfileComplete(profile) ? "/dashboard" : "/onboarding");
       } else {
         router.replace("/login");
       }

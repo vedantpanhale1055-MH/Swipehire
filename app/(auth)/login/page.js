@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from '@/lib/supabase';
+import { signIn, getCurrentUser, getProfile, isProfileComplete } from '@/lib/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,7 +20,9 @@ export default function LoginPage() {
 
     try {
       await signIn(email, password);
-      router.push('/discover');
+      const user = await getCurrentUser();
+      const profile = user ? await getProfile(user.id) : null;
+      router.push(isProfileComplete(profile) ? '/discover' : '/onboarding');
     } catch (err) {
       setError(err.message || 'Failed to log in');
     } finally {
