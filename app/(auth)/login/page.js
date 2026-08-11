@@ -1,10 +1,12 @@
 'use client';
 // app/(auth)/login/page.js
-// FILLS EXISTING EMPTY FILE — paste this into the current empty page.js.
+// REPLACES EXISTING FILE — overwrite the current login page.js with this.
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn, getCurrentUser, getProfile, isProfileComplete } from '@/lib/supabase';
+import AuthLayout from '@/components/Auth/AuthLayout';
+import styles from '@/components/Auth/AuthForm.module.css';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,33 +33,58 @@ export default function LoginPage() {
   }
 
   return (
-    <main style={{ maxWidth: 400, margin: '4rem auto', fontFamily: 'sans-serif' }}>
-      <h1>Log in to SwipeHire</h1>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ padding: '0.5rem' }}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ padding: '0.5rem' }}
-        />
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" disabled={loading} style={{ padding: '0.5rem' }}>
-          {loading ? 'Logging in...' : 'Log in'}
+    <AuthLayout
+      eyebrow="Right for the role, left to pass"
+      title="Welcome back"
+      subtitle="Log in to pick up where you left off."
+    >
+      <form onSubmit={handleSubmit} className={styles.form} noValidate>
+        <div className={styles.field}>
+          <label htmlFor="email" className={styles.label}>
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className={styles.input}
+          />
+        </div>
+
+        <div className={styles.field}>
+          <label htmlFor="password" className={styles.label}>
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className={styles.input}
+          />
+        </div>
+
+        {error && (
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
+        )}
+
+        <button type="submit" disabled={loading} className={styles.submitButton}>
+          {loading ? 'Logging in…' : 'Log in'}
         </button>
       </form>
-      <p style={{ marginTop: '1rem' }}>
+
+      <p className={styles.switchLine}>
         No account? <a href="/signup">Sign up</a>
       </p>
-    </main>
+    </AuthLayout>
   );
 }

@@ -1,13 +1,13 @@
 'use client';
 // app/(auth)/signup/page.js
-// FILLS EXISTING EMPTY FILE — paste this into the current empty page.js.
+// REPLACES EXISTING FILE — overwrite the current signup page.js with this.
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { signUp } from '@/lib/supabase';
+import AuthLayout from '@/components/Auth/AuthLayout';
+import styles from '@/components/Auth/AuthForm.module.css';
 
 export default function SignupPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -31,43 +31,79 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <main style={{ maxWidth: 400, margin: '4rem auto', fontFamily: 'sans-serif' }}>
-        <h1>Check your email</h1>
-        <p>We sent a confirmation link to {email}. Confirm it, then log in.</p>
-        <a href="/login">Go to login</a>
-      </main>
+      <AuthLayout
+        eyebrow="Right for the role, left to pass"
+        title="Check your email"
+        subtitle={null}
+      >
+        <div className={styles.successIcon} aria-hidden="true">
+          ✓
+        </div>
+        <p className={styles.successText}>
+          We sent a confirmation link to <strong>{email}</strong>. Confirm it, then log in.
+        </p>
+        <p className={styles.switchLine}>
+          <a href="/login">Go to login</a>
+        </p>
+      </AuthLayout>
     );
   }
 
   return (
-    <main style={{ maxWidth: 400, margin: '4rem auto', fontFamily: 'sans-serif' }}>
-      <h1>Create your SwipeHire account</h1>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ padding: '0.5rem' }}
-        />
-        <input
-          type="password"
-          placeholder="Password (min 6 characters)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-          style={{ padding: '0.5rem' }}
-        />
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" disabled={loading} style={{ padding: '0.5rem' }}>
-          {loading ? 'Creating account...' : 'Sign up'}
+    <AuthLayout
+      eyebrow="Right for the role, left to pass"
+      title="Create your account"
+      subtitle="Start swiping through real job listings in minutes."
+    >
+      <form onSubmit={handleSubmit} className={styles.form} noValidate>
+        <div className={styles.field}>
+          <label htmlFor="email" className={styles.label}>
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className={styles.input}
+          />
+        </div>
+
+        <div className={styles.field}>
+          <label htmlFor="password" className={styles.label}>
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            autoComplete="new-password"
+            placeholder="At least 6 characters"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            className={styles.input}
+          />
+          <span className={styles.hint}>Minimum 6 characters.</span>
+        </div>
+
+        {error && (
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
+        )}
+
+        <button type="submit" disabled={loading} className={styles.submitButton}>
+          {loading ? 'Creating account…' : 'Sign up'}
         </button>
       </form>
-      <p style={{ marginTop: '1rem' }}>
+
+      <p className={styles.switchLine}>
         Already have an account? <a href="/login">Log in</a>
       </p>
-    </main>
+    </AuthLayout>
   );
 }
