@@ -1,8 +1,12 @@
 "use client";
+// components/Onboarding/Onboarding.jsx
+// REPLACES EXISTING FILE — now wrapped in AuthLayout to match login/signup.
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./Onboarding.module.css";
+import formStyles from "@/components/Auth/AuthForm.module.css";
+import AuthLayout from "@/components/Auth/AuthLayout";
 import OnboardingForm from "./OnboardingForm";
 import { getCurrentUser, getProfile, upsertProfile } from "@/lib/supabase";
 
@@ -71,30 +75,26 @@ export default function Onboarding() {
   }
 
   return (
-    <main className={styles.page}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>Let's set up your profile</h1>
-        <p className={styles.subtitle}>
-          This takes under a minute and powers your job matches and AI resume
-          tailoring. You can fill in the rest of your resume later.
+    <AuthLayout
+      eyebrow="One quick step"
+      title="Let's set up your profile"
+      subtitle="Takes under a minute, and powers your job matches and AI resume tailoring."
+    >
+      {error && (
+        <p className={formStyles.error} role="alert">
+          {error}
         </p>
+      )}
 
-        {error && <p className={styles.error}>{error}</p>}
+      <OnboardingForm initialProfile={initialProfile} onSave={handleSave} saving={saving} />
 
-        <OnboardingForm
-          initialProfile={initialProfile}
-          onSave={handleSave}
-          saving={saving}
-        />
-
-        <button
-          type="button"
-          className={styles.skipLink}
-          onClick={() => router.replace("/discover")}
-        >
-          Skip for now
-        </button>
-      </div>
-    </main>
+      <button
+        type="button"
+        className={styles.skipLink}
+        onClick={() => router.replace("/discover")}
+      >
+        Skip for now
+      </button>
+    </AuthLayout>
   );
 }

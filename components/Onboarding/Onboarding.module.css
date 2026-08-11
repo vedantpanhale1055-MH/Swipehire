@@ -1,102 +1,30 @@
-.page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: var(--color-bg, #faf7f5);
-}
+/* components/Onboarding/Onboarding.module.css
+   REPLACES EXISTING FILE. Only the loading state and skip button live here now —
+   the form and card chrome come from AuthLayout / AuthForm.module.css. */
 
 .centered {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.card {
-  width: 100%;
-  max-width: 480px;
-  background: #fff;
-  border-radius: 16px;
-  border: 1px solid var(--color-border, #eee);
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.title {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-primary, #1a1a1a);
-  margin: 0;
-}
-
-.subtitle {
-  font-size: 14px;
-  color: var(--text-secondary, #666);
-  margin: 0 0 8px 0;
-  line-height: 1.5;
-}
-
-.error {
-  font-size: 13px;
-  color: #b3261e;
-  margin: 0;
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 13px;
-  color: var(--text-secondary, #666);
-}
-
-.input,
-.textarea {
-  padding: 10px 12px;
-  border: 1px solid var(--color-border, #ddd);
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
-}
-
-.textarea {
-  min-height: 60px;
-  resize: vertical;
-}
-
-.submitBtn {
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: var(--color-accent, #f4a259);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.submitBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  font-family: var(--font-sans);
+  color: var(--color-text-muted);
+  background: var(--color-bg);
 }
 
 .skipLink {
-  align-self: center;
+  display: block;
+  margin: var(--space-5) auto 0 auto;
   background: none;
   border: none;
-  color: var(--text-secondary, #666);
-  font-size: 13px;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
   text-decoration: underline;
   cursor: pointer;
-  padding: 4px;
+  padding: var(--space-2);
+}
+
+.skipLink:hover {
+  color: var(--color-text-secondary);
 }
