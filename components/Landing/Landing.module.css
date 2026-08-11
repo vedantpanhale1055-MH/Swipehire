@@ -1,0 +1,348 @@
+/* components/Landing/Landing.module.css
+   NEW FILE — create alongside Landing.jsx. */
+
+.page {
+  background: var(--color-bg);
+  min-height: 100vh;
+}
+
+/* ---------- Header ---------- */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-6);
+}
+
+.logo {
+  font-family: var(--font-serif);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.navLink {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+}
+
+.navLink:hover {
+  color: var(--color-text-primary);
+}
+
+.navCta {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-primary);
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+
+.navCta:hover {
+  background: var(--color-primary-hover);
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-10) var(--space-6) var(--space-10);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: var(--space-10);
+}
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-primary-hover);
+  font-weight: 600;
+  margin: 0 0 var(--space-3) 0;
+}
+
+.headline {
+  font-family: var(--font-serif);
+  font-size: clamp(2.25rem, 4vw, 3.25rem);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.1;
+  margin: 0 0 var(--space-5) 0;
+}
+
+.subhead {
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+  margin: 0 0 var(--space-8) 0;
+  max-width: 460px;
+}
+
+.heroActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.primaryCta {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-primary);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+
+.primaryCta:hover {
+  background: var(--color-primary-hover);
+}
+
+.secondaryCta {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  text-decoration: none;
+  transition: border-color var(--transition-fast);
+}
+
+.secondaryCta:hover {
+  border-color: var(--color-primary);
+}
+
+/* ---------- Hero visual ---------- */
+
+.heroVisual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 260px;
+}
+
+.heroCard {
+  width: 320px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-6);
+  transform: rotate(-3deg);
+}
+
+.heroCardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.heroCardRole {
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.heroCardCompany {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin: var(--space-1) 0 0 0;
+}
+
+.heroRing {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-success);
+  background: var(--color-success-bg);
+  border: 2px solid var(--color-success-border);
+}
+
+.heroCardTag {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin: var(--space-5) 0 0 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.swipeIcon {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.swipeIconPass {
+  bottom: 8%;
+  left: 10%;
+  color: var(--color-danger);
+  border: 2px solid var(--color-danger-border);
+}
+
+.swipeIconSave {
+  top: 6%;
+  right: 8%;
+  color: var(--color-success);
+  border: 2px solid var(--color-success-border);
+}
+
+/* ---------- Steps ---------- */
+
+.steps {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-10) var(--space-6);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-8);
+  border-top: 1px solid var(--color-border);
+}
+
+.stepNumber {
+  font-family: var(--font-serif);
+  font-size: var(--text-2xl);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.stepTitle {
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: var(--space-2) 0 var(--space-2) 0;
+}
+
+.stepBody {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ---------- Features ---------- */
+
+.features {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-10) var(--space-6);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-5);
+}
+
+.featureCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-5);
+}
+
+.featureTitle {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.featureBody {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ---------- Footer CTA ---------- */
+
+.footerCta {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: var(--space-10) var(--space-6) var(--space-10);
+  text-align: center;
+}
+
+.footerHeadline {
+  font-family: var(--font-serif);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-6) 0;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .heroVisual {
+    order: -1;
+  }
+
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
+  .features {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .features {
+    grid-template-columns: 1fr;
+  }
+
+  .heroCard {
+    width: 100%;
+  }
+}

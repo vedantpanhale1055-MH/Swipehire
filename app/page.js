@@ -1,12 +1,16 @@
 "use client";
+// app/page.js
+// REPLACES EXISTING FILE — overwrite the current root page.js with this.
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCurrentUser, getProfile, isProfileComplete } from "@/lib/supabase";
+import Landing from "@/components/Landing/Landing";
 
 export default function Home() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
+  const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -16,11 +20,12 @@ export default function Home() {
       if (cancelled) return;
 
       if (user) {
+        setLoggedIn(true);
         const profile = await getProfile(user.id);
         if (cancelled) return;
         router.replace(isProfileComplete(profile) ? "/dashboard" : "/onboarding");
       } else {
-        router.replace("/login");
+        setChecking(false);
       }
     }
 
@@ -31,10 +36,10 @@ export default function Home() {
     };
   }, [router]);
 
-  // Brief loading state while we check auth and redirect
-  return (
-    <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      {checking && <p>Loading…</p>}
-    </main>
-  );
+  if (checking || loggedIn) {
+    // Brief loading state while we check auth, or while redirecting a logged-in user
+    return null;
+  }
+
+  return <Landing />;
 }
