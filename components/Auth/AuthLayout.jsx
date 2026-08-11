@@ -16,6 +16,15 @@ function matchTone(match) {
   return 'low';
 }
 
+const FLOATING_TAGS = [
+  { label: 'React', top: '6%', left: '4%', rotate: -8, tone: 'primary', duration: 6.5 },
+  { label: 'Remote', top: '4%', right: '6%', rotate: 6, tone: 'success', duration: 7.5 },
+  { label: '₹18L', top: '34%', right: '0%', rotate: -5, tone: 'warning', duration: 5.5 },
+  { label: 'UI/UX', bottom: '16%', right: '10%', rotate: 7, tone: 'neutral', duration: 8 },
+  { label: 'Node.js', bottom: '4%', left: '2%', rotate: -6, tone: 'neutral', duration: 6 },
+  { label: '5+ Yrs', top: '58%', left: '0%', rotate: 5, tone: 'primary', duration: 7 },
+];
+
 export default function AuthLayout({ eyebrow, title, subtitle, children }) {
   return (
     <div className={styles.shell}>
@@ -35,6 +44,23 @@ export default function AuthLayout({ eyebrow, title, subtitle, children }) {
       </div>
 
       <div className={styles.showcasePanel} aria-hidden="true">
+        {FLOATING_TAGS.map((tag) => (
+          <span
+            key={tag.label}
+            className={`${styles.floatingTag} ${styles['floatingTag--' + tag.tone]}`}
+            style={{
+              top: tag.top,
+              left: tag.left,
+              right: tag.right,
+              bottom: tag.bottom,
+              '--r': `${tag.rotate}deg`,
+              '--duration': `${tag.duration}s`,
+            }}
+          >
+            {tag.label}
+          </span>
+        ))}
+
         <div className={styles.showcaseContent}>
           <p className={styles.showcaseEyebrow}>{eyebrow}</p>
           <h2 className={styles.showcaseHeadline}>
