@@ -27,7 +27,10 @@ export default function DiscoverPage() {
         setError(null);
         setNoProfile(false);
 
-        const res = await fetch("/api/jobs");
+        // Always requesting the default page 1 meant refresh showed the same
+        // jobs every time. Pick a random page (Adzuna has many) for variety.
+        const randomPage = Math.floor(Math.random() * 5) + 1;
+        const res = await fetch(`/api/jobs?page=${randomPage}`);
         if (!res.ok) {
           throw new Error(`Request failed: ${res.status}`);
         }
