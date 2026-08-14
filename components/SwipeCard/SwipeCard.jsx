@@ -85,6 +85,11 @@ export default function SwipeCard({ job, onSwipe, isTop }) {
           className={styles.infoBtn}
           onClick={(e) => {
             e.stopPropagation();
+            try {
+              sessionStorage.setItem(`job:${job.id}`, JSON.stringify(job));
+            } catch {
+              // sessionStorage unavailable — detail page falls back to DB lookup
+            }
             router.push(`/jobs/${job.id}`);
           }}
           onPointerDown={(e) => e.stopPropagation()}

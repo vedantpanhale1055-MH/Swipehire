@@ -20,6 +20,25 @@ export default function JobDetailPage() {
       try {
         setLoading(true);
         setError(null);
+
+        // Jobs opened from the Discover feed haven't been saved yet, so
+        // their id is a raw source id (e.g. "adzuna-123") — not a Supabase
+        // row id. SwipeCard caches the full job in sessionStorage before
+        // navigating here; check that first to avoid a DB lookup that will
+        // never match for unsaved feed jobs.
+        let cached = null;
+        try {
+          const raw = sessionStorage.getItem(`job:${params.id}`);
+          if (raw) cached = JSON.parse(raw);
+        } catch {
+          // sessionStorage unavailable or bad JSON — fall through to DB lookup
+        }
+
+        if (cached) {
+          if (!cancelled) setJob(cached);
+          return;
+        }
+
         const row = await getSavedJobById(params.id);
         if (!cancelled) {
           if (!row) {
