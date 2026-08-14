@@ -3,13 +3,16 @@
 import { useState, useEffect } from "react";
 import SwipeCard from "@/components/SwipeCard/SwipeCard";
 import Sidebar from "@/components/Sidebar/Sidebar";
-import { saveJob, getCurrentUser } from "@/lib/supabase";
+import { saveJob, getCurrentUser, getProfile } from "@/lib/supabase";
+import { buildResumeText } from "@/lib/resumeText";
 import styles from "./discover.module.css";
 
 export default function DiscoverPage() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [scoring, setScoring] = useState(false);
   const [error, setError] = useState(null);
+  const [noProfile, setNoProfile] = useState(false);
   const [index, setIndex] = useState(0);
   const [savedIds, setSavedIds] = useState([]);
   const [rejectedIds, setRejectedIds] = useState([]);
@@ -22,13 +25,48 @@ export default function DiscoverPage() {
       try {
         setLoading(true);
         setError(null);
+        setNoProfile(false);
+
         const res = await fetch("/api/jobs");
         if (!res.ok) {
           throw new Error(`Request failed: ${res.status}`);
         }
         const { jobs: fetchedJobs } = await res.json();
+        if (cancelled) return;
+
+        setJobs(fetchedJobs);
+        setLoading(false);
+
+        // Score jobs against the user's resume, if they have one.
+        const user = await getCurrentUser();
+        if (!user) {
+          setNoProfile(true);
+          return;
+        }
+
+        const profile = await getProfile(user.id);
+        if (!profile) {
+          setNoProfile(true);
+          return;
+        }
+
+        const resumeText = buildResumeText(profile);
+        setScoring(true);
+
+        const scoreRes = await fetch("/api/score-jobs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ resumeText, jobs: fetchedJobs }),
+        });
+
+        if (!scoreRes.ok) {
+          console.error("Scoring failed:", await scoreRes.text());
+          return;
+        }
+
+        const { jobs: scoredJobs } = await scoreRes.json();
         if (!cancelled) {
-          setJobs(fetchedJobs);
+          setJobs(scoredJobs);
         }
       } catch (err) {
         if (!cancelled) {
@@ -37,6 +75,7 @@ export default function DiscoverPage() {
       } finally {
         if (!cancelled) {
           setLoading(false);
+          setScoring(false);
         }
       }
     }
@@ -107,6 +146,17 @@ export default function DiscoverPage() {
 
       <div className={styles.page} style={{ flex: 1 }}>
         <h1 className={styles.heading}>Discover</h1>
+
+        {scoring && (
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary, #666)", margin: "-8px 0 12px" }}>
+            Scoring matches against your resume…
+          </p>
+        )}
+        {noProfile && !loading && (
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary, #666)", margin: "-8px 0 12px" }}>
+            Add your resume in Resume Builder to see AI match scores.
+          </p>
+        )}
 
         <div className={styles.stackWrapper}>
           {loading ? (
