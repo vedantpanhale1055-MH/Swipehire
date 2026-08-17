@@ -1,145 +1,161 @@
 # SwipeHire
 
-AI-powered job discovery, matching, and application tracker. Aggregates job listings, scores fit against your resume using AI, lets you triage jobs with a swipe interface, tracks applications on a Kanban board, and tailors your resume per job.
+AI-powered job discovery, matching, and application tracker. Swipe through real job listings like a dating app, get AI-scored fit for each one, track your applications on a Kanban board, build a resume, and tailor that resume to specific jobs with AI — all built on a completely free stack.
 
-Full product scope and roadmap: see [PRD.md](./PRD.md).
+Full product spec: see [PRD.md](./PRD.md)
 
-## Tech stack (zero-cost)
+---
 
-- **Framework:** Next.js 14 (App Router)
-- **Database + Auth:** Supabase (Postgres, free tier)
-- **AI:** Groq API (free-tier Llama inference) — job-fit scoring and resume tailoring
-- **Job sources:** Remotive and Arbeitnow public APIs
-- **Styling:** CSS Modules
-- **Hosting (planned):** Vercel
+## Tech Stack
 
-## Project structure
+| Layer | Choice | Notes |
+|---|---|---|
+| Frontend | Next.js 14 | App Router |
+| Styling | CSS Modules | Shared design tokens in `lib/tokens.css`; light-orange/peach accent palette |
+| Backend / DB | Supabase (Postgres) | Row-Level Security on every table, grants scoped to `authenticated` role |
+| Auth | Supabase Auth | Email/password, session persisted via `AuthProvider` |
+| AI | Groq (`openai/gpt-oss-120b`) | Resume tailoring, upcoming: match scoring |
+| Job Data | Adzuna API (India endpoint) | Real listings — Bangalore, Mumbai, Ahmedabad, etc. |
+| Hosting | Vercel | Deployed |
+
+Chosen to keep the entire stack at **zero cost** while still being real, production-shaped infrastructure (not mock data throughout).
+
+---
+
+## Project Structure
 
 ```
 app/
   (auth)/
-    login/page.js        # Email/password login
-    signup/page.js        # Email/password signup
-  api/
-    jobs/route.js          # GET/POST/PATCH/DELETE saved jobs
-    jobs/score/route.js    # AI job-fit scoring (single or batch)
-    resume/tailor/route.js # AI resume tailoring
-  applications/            # Kanban application tracker (WIP)
-  discover/                 # Swipe-card job feed (WIP)
-  portfolio/                # Portfolio builder (WIP)
-  resume/                   # Resume builder (WIP)
-  layout.js                 # Root layout, wraps app in AuthProvider
-  page.js                   # Home page
+    login/                 - Supabase email/password login
+    signup/                - Signup + email confirmation
+  discover/                - Swipe interface, pulls live Adzuna listings
+  jobs/[id]/                - Job detail: AI match reasoning, interview tips, Tailor Resume
+  applications/             - Kanban board: Saved / Applied / Interview / Offer
+  jobs-list/                - Full searchable/filterable/sortable list of saved jobs
+  calendar/                 - Interview dates on a month grid + upcoming list
+  documents/                - Master resume + saved tailored resumes
+  dashboard/                - Real stat counts + recent activity feed
+  stats/                    - Funnel chart, response/offer rate, top companies
+  resume-builder/           - Resume form + live A4-style preview
+  settings/                 - Account email, link to resume builder, sign out
+  api/jobs/                 - Server route that proxies Adzuna (avoids browser CORS)
+
 components/
-  AuthProvider.js           # React context for logged-in user/session state
-  JobDetail/                # (WIP)
-  KanbanBoard/               # (WIP)
-  ResumeBuilder/             # (WIP)
-  SwipeCard/                  # (WIP)
-  ui/                          # (WIP)
+  SwipeCard/                - Drag + button swipe, match-score ring (green/yellow/red)
+  JobDetail/                 - Match reasoning, tips, tailor button
+  KanbanBoard/               - Drag-and-drop across status columns
+  ResumeBuilder/             - Form + ResumePreview (single-column, matches real CV layout)
+  Sidebar/                   - Shared nav, sticky, user card pinned to bottom
+  Dashboard/, Settings/, ui/
+
 lib/
-  supabase.js                # Supabase client, auth helpers, saved-jobs DB helpers
-  groq.js                     # Groq client — job-fit scoring, resume tailoring
-  jobSources.js                # Job aggregation adapter (Remotive + Arbeitnow)
-  tokens.css                   # Design tokens (WIP)
-next.config.js
-jsconfig.json                  # Enables the "@/" import alias
-package.json
-PRD.md
+  jobSources.js   - Adzuna integration + HTML entity decoding
+  groq.js         - tailorResume() -> { summary, bullets, keywords_added }
+  supabase.js     - saveJob, getUserJobs, updateJobStatus, addManualJob, getProfile, etc.
+  tokens.css      - Color, spacing, and type design tokens
 ```
 
-## Local setup
+---
 
-### 1. Clone and install
+## Status: In active development, deployed to Vercel
 
-```bash
-git clone https://github.com/vedantpanhale1055-MH/Swipehire.git
-cd Swipehire
-npm install
-```
+### ✅ Done
 
-### 2. Environment variables
+**Auth**
+- Email/password signup + confirmation + login, working end-to-end
+- Session persistence via `AuthProvider`
 
-Create `.env.local` in the project root (never committed — already in `.gitignore`):
+**Discover**
+- Real India job listings from Adzuna (switched from Arbeitnow for better city-level data)
+- Swipe left/right (drag + buttons), right-swipe persists to `saved_jobs` in Supabase
+- Card shows match score as a color-coded ring
 
-```
-NEXT_PUBLIC_SUPABASE_URL=https://<your-project-id>.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<your Supabase publishable key>
-GROQ_API_KEY=<your Groq API key>
-```
+**Job Detail**
+- Pulled from Supabase (not mock data)
+- AI match reasoning, interview tips, "about company"
+- Tailor Resume button wired to Groq, fully working after fixing several bugs (missing onClick on Kanban cards, wrong data source, missing userId arg, decommissioned Groq model)
 
-- Supabase URL/key: Supabase dashboard → Settings → API (use the **Publishable key**, not the secret key)
-- Groq key: [console.groq.com](https://console.groq.com) → API Keys
+**Applications (Kanban)**
+- Drag-and-drop between Saved / Applied / Interview / Offer, synced live to Supabase
+- Search box filters by title/company
+- "+ Add Job" modal for manually adding jobs outside the swipe flow
 
-### 3. Supabase database setup
+**Resume Builder**
+- Full profile form: career objective, contact info, work history, projects (with per-project tech stacks), skills, education, certifications, languages
+- Live preview in single-column layout matching Vedant's actual CV structure (went through a two-column redesign before landing here)
+- Saves/reloads from a dedicated `profiles` table
 
-Create a `saved_jobs` table (Table Editor → New table) with columns:
+**Dashboard**
+- Real counts per status (saved/applied/interview/offer)
+- Recent activity: last 6 jobs, clickable
 
-| column | type | default |
-|---|---|---|
-| id | int8 | auto (primary key) |
-| created_at | timestamptz | `now()` |
-| user_id | uuid | — |
-| title | text | — |
-| company | text | — |
-| location | text | — |
-| description | text | — |
-| url | text | — |
-| status | text | `saved` |
+**Jobs List**
+- Search, filter, sort across all saved jobs
+- Delete
 
-Then run this in the SQL Editor to enable row-level security so users can only access their own jobs:
+**Calendar**
+- Month grid showing interview-stage jobs on their scheduled date
+- Upcoming interviews list
+- Inline datetime picker for interview jobs missing a date
 
-```sql
-alter table saved_jobs enable row level security;
+**Documents**
+- Master resume card linking to Resume Builder
+- Saved tailored resumes, expandable, copy-as-text
+- "Save to Documents" added to the Tailor Resume modal (previously generate-and-forget)
 
-create policy "Users can view their own jobs"
-on saved_jobs for select
-using (auth.uid() = user_id);
+**Stats**
+- Top-line stats: total tracked, saved last 7 days, response rate, offer rate
+- Application funnel bar chart, top 5 companies by saves — computed live, no chart library
 
-create policy "Users can insert their own jobs"
-on saved_jobs for insert
-with check (auth.uid() = user_id);
+**Infrastructure / fixes along the way**
+- Patched critical Next.js CVEs (CVE-2025-55184, CVE-2025-67779), landed on `next@14.2.35`
+- Sidebar present and consistent across every page (was missing on Discover)
+- Root route (`app/page.js`) now redirects to `/dashboard` or `/login` instead of showing static text
+- Fixed an import-casing bug (`components/Dashboard` → `components/dashboard`) that would've broken the Linux/Vercel build
+- Every new page is verified with a real `next build` in a container clone of the repo before being handed off
 
-create policy "Users can update their own jobs"
-on saved_jobs for update
-using (auth.uid() = user_id);
+### 🔨 In Progress
+- **AI match scoring** — real Groq-based scoring of each job against the user's resume/profile, replacing the current placeholder scores shown on swipe cards
 
-create policy "Users can delete their own jobs"
-on saved_jobs for delete
-using (auth.uid() = user_id);
+### ⏳ Not Started
+- Portfolio builder
+- Cover letter generation
+- Job alerts / auto-refresh of listings
 
-grant usage on schema public to authenticated;
-grant select, insert, update, delete on saved_jobs to authenticated;
-```
+---
 
-### 4. Run the dev server
+## Setup
 
-```bash
-npm run dev
-```
+1. Clone and install:
+   ```bash
+   git clone https://github.com/vedantpanhale1055-MH/Swipehire.git
+   cd Swipehire
+   npm install
+   ```
+2. Create `.env.local`:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=
+   GROQ_API_KEY=
+   ADZUNA_APP_ID=
+   ADZUNA_APP_KEY=
+   ```
+3. Run locally:
+   ```bash
+   npm run dev
+   ```
 
-Visit `http://localhost:3000`.
+## Database
 
-## Current status
+Supabase project (Tokyo region). Tables, all with RLS policies scoped to `authenticated`:
+- `saved_jobs` — job data, status, interview_date, tailored_resume(_at)
+- `profiles` — resume/profile data (name, links, skills, education, certifications, projects)
 
-**Working:**
-- Next.js app boots and renders
-- Email/password signup and login (Supabase Auth), with email confirmation
-- Session persistence across the app via `AuthProvider`
-- `saved_jobs` table with RLS policies restricting access to each user's own rows
-- API routes for saved jobs CRUD, AI job-fit scoring, and AI resume tailoring
-- Job aggregation from Remotive and Arbeitnow
+## Deployment
 
-**In progress / not yet built:**
-- Discover page (swipe-card UI)
-- Applications page (Kanban board UI)
-- Resume builder UI
-- Portfolio builder UI
-- Connecting browser session tokens to API routes so authenticated requests actually work end-to-end
-- Styling (CSS Modules / design tokens)
+Live on Vercel, connected to the `main` branch of this repo.
 
-## Security notes
+## Repo
 
-- `.env.local` holds real secrets and is never committed
-- The Supabase **anon/publishable** key is safe for client-side use only because RLS policies are enabled on all tables
-- Table access is granted to the `authenticated` role only — not `anon` — so requests must come from a logged-in session
+[github.com/vedantpanhale1055-MH/Swipehire](https://github.com/vedantpanhale1055-MH/Swipehire)
