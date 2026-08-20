@@ -1,23 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import SwipeCard from "@/components/SwipeCard/SwipeCard";
 import Sidebar from "@/components/Sidebar/Sidebar";
+import FiltersPanel from "@/components/FiltersPanel/FiltersPanel";
 import { saveJob, getCurrentUser, getProfile } from "@/lib/supabase";
 import { buildResumeText } from "@/lib/resumeText";
 import styles from "./discover.module.css";
 
+const EMPTY_FILTERS = { jobType: "", city: "", workMode: "", paidStatus: "" };
+
 export default function DiscoverPage() {
-  const [jobs, setJobs] = useState([]);
+  const [allJobs, setAllJobs] = useState([]); // fetched (+ scored) from the server
   const [loading, setLoading] = useState(true);
   const [scoring, setScoring] = useState(false);
   const [error, setError] = useState(null);
   const [noProfile, setNoProfile] = useState(false);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [index, setIndex] = useState(0);
   const [savedIds, setSavedIds] = useState([]);
   const [rejectedIds, setRejectedIds] = useState([]);
   const [history, setHistory] = useState([]); // stack of { jobId, direction }
 
+  // Job type + city are real Adzuna query params, so changing either refetches.
   useEffect(() => {
     let cancelled = false;
 
@@ -26,18 +31,22 @@ export default function DiscoverPage() {
         setLoading(true);
         setError(null);
         setNoProfile(false);
+        setIndex(0);
+        setHistory([]);
 
-        // Always requesting the default page 1 meant refresh showed the same
-        // jobs every time. Pick a random page (Adzuna has many) for variety.
         const randomPage = Math.floor(Math.random() * 5) + 1;
-        const res = await fetch(`/api/jobs?page=${randomPage}`);
+        const params = new URLSearchParams({ page: String(randomPage) });
+        if (filters.jobType) params.set("employmentType", filters.jobType);
+        if (filters.city) params.set("where", filters.city);
+
+        const res = await fetch(`/api/jobs?${params.toString()}`);
         if (!res.ok) {
           throw new Error(`Request failed: ${res.status}`);
         }
         const { jobs: fetchedJobs } = await res.json();
         if (cancelled) return;
 
-        setJobs(fetchedJobs);
+        setAllJobs(fetchedJobs);
         setLoading(false);
 
         // Score jobs against the user's resume, if they have one.
@@ -69,7 +78,7 @@ export default function DiscoverPage() {
 
         const { jobs: scoredJobs } = await scoreRes.json();
         if (!cancelled) {
-          setJobs(scoredJobs);
+          setAllJobs(scoredJobs);
         }
       } catch (err) {
         if (!cancelled) {
@@ -88,7 +97,31 @@ export default function DiscoverPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.jobType, filters.city]);
+
+  // Work mode + paid status aren't real Adzuna params (Adzuna doesn't expose
+  // them) — they're detected client-side per job, so filter locally instead
+  // of refetching.
+  const jobs = useMemo(() => {
+    return allJobs.filter((job) => {
+      if (filters.workMode && job.workMode !== filters.workMode) return false;
+      if (
+        filters.jobType === "internship" &&
+        filters.paidStatus &&
+        job.paidStatus !== filters.paidStatus
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [allJobs, filters.workMode, filters.paidStatus, filters.jobType]);
+
+  // Reset position in the deck whenever the client-side filtered list changes.
+  useEffect(() => {
+    setIndex(0);
+    setHistory([]);
+  }, [filters.workMode, filters.paidStatus]);
 
   const stack = jobs.slice(index, index + 3); // top 3 for stack effect
   const currentJob = jobs[index];
@@ -149,6 +182,8 @@ export default function DiscoverPage() {
 
       <div className={styles.page} style={{ flex: 1 }}>
         <h1 className={styles.heading}>Discover</h1>
+
+        <FiltersPanel filters={filters} onChange={setFilters} />
 
         {scoring && (
           <p style={{ fontSize: 13, color: "var(--color-text-secondary, #666)", margin: "-8px 0 12px" }}>

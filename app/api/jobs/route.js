@@ -7,9 +7,10 @@ export async function GET(request) {
   const page = Number(searchParams.get("page")) || 1;
   const what = searchParams.get("what") || "";
   const where = searchParams.get("where") || "";
+  const employmentType = searchParams.get("employmentType") || "";
 
   try {
-    const { jobs, nextPage } = await fetchAdzunaJobs({ page, what, where });
+    const { jobs, nextPage } = await fetchAdzunaJobs({ page, what, where, employmentType });
     return NextResponse.json({ jobs, nextPage });
   } catch (err) {
     console.error("Failed to fetch jobs from Adzuna:", err);
