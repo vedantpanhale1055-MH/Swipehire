@@ -34,8 +34,13 @@ export default function DiscoverPage() {
         setIndex(0);
         setHistory([]);
 
-        const randomPage = Math.floor(Math.random() * 5) + 1;
-        const params = new URLSearchParams({ page: String(randomPage) });
+        // Randomizing the page only makes sense for a broad, unfiltered
+        // browse. A narrow filtered search (e.g. "internship" in Pune) may
+        // only have 1-2 pages of real results — picking a random page up to
+        // 5 can land past the end and come back nearly empty.
+        const hasServerFilters = Boolean(filters.jobType || filters.city);
+        const page = hasServerFilters ? 1 : Math.floor(Math.random() * 5) + 1;
+        const params = new URLSearchParams({ page: String(page) });
         if (filters.jobType) params.set("employmentType", filters.jobType);
         if (filters.city) params.set("where", filters.city);
 
