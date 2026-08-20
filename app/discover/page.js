@@ -108,7 +108,7 @@ export default function DiscoverPage() {
   // Work mode + paid status aren't real Adzuna params (Adzuna doesn't expose
   // them) — they're detected client-side per job, so filter locally instead
   // of refetching.
-  const jobs = useMemo(() => {
+  const strictlyFiltered = useMemo(() => {
     return allJobs.filter((job) => {
       if (filters.workMode && job.workMode !== filters.workMode) return false;
       if (
@@ -121,6 +121,29 @@ export default function DiscoverPage() {
       return true;
     });
   }, [allJobs, filters.workMode, filters.paidStatus, filters.jobType]);
+
+  // Stacking a rare work mode (e.g. Remote) on top of an already-narrow
+  // keyword search (e.g. Internship) can leave almost nothing. Rather than
+  // show a near-empty deck, drop the work-mode requirement and say so.
+  const widenedByWorkMode =
+    Boolean(filters.workMode) &&
+    strictlyFiltered.length < 3 &&
+    allJobs.length > strictlyFiltered.length;
+
+  const jobs = useMemo(() => {
+    if (!widenedByWorkMode) return strictlyFiltered;
+    return allJobs.filter((job) => {
+      if (
+        filters.jobType === "internship" &&
+        filters.paidStatus &&
+        job.paidStatus !== filters.paidStatus
+      ) {
+        return false;
+      }
+      return true;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [widenedByWorkMode, strictlyFiltered, allJobs, filters.paidStatus, filters.jobType]);
 
   // Reset position in the deck whenever the client-side filtered list changes.
   useEffect(() => {
@@ -190,6 +213,11 @@ export default function DiscoverPage() {
 
         <FiltersPanel filters={filters} onChange={setFilters} />
 
+        {widenedByWorkMode && !loading && (
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary, #666)", margin: "-8px 0 12px" }}>
+            Few {filters.workMode} matches — showing all {filters.jobType ? filters.jobType.replace("_", "-") : "jobs"} instead.
+          </p>
+        )}
         {scoring && (
           <p style={{ fontSize: 13, color: "var(--color-text-secondary, #666)", margin: "-8px 0 12px" }}>
             Scoring matches against your resume…
