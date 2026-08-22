@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import SwipeCard from "@/components/SwipeCard/SwipeCard";
 import Sidebar from "@/components/Sidebar/Sidebar";
 import FiltersPanel from "@/components/FiltersPanel/FiltersPanel";
@@ -10,106 +10,33 @@ import styles from "./discover.module.css";
 
 const EMPTY_FILTERS = { jobType: "", city: "", workMode: "", paidStatus: "" };
 
+// Only show jobs that clear this match score against the user's resume.
+const MIN_MATCH_SCORE = 70;
+// Try to gather at least this many qualifying matches before stopping.
+const TARGET_GOOD_MATCHES = 5;
+// Cap how many Adzuna pages we'll page through looking for matches, so a
+// resume/filter combo with genuinely few good fits doesn't hammer the API.
+const MAX_PAGES = 3;
+
 export default function DiscoverPage() {
-  const [allJobs, setAllJobs] = useState([]); // fetched (+ scored) from the server
+  const [allJobs, setAllJobs] = useState([]); // accumulated, already filtered to 70%+ (or unscored if no resume)
   const [loading, setLoading] = useState(true);
-  const [scoring, setScoring] = useState(false);
   const [error, setError] = useState(null);
   const [noProfile, setNoProfile] = useState(false);
+  const [ranOutOfPages, setRanOutOfPages] = useState(false);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [index, setIndex] = useState(0);
   const [savedIds, setSavedIds] = useState([]);
   const [rejectedIds, setRejectedIds] = useState([]);
   const [history, setHistory] = useState([]); // stack of { jobId, direction }
 
-  // Job type + city are real Adzuna query params, so changing either refetches.
+  // Any filter change re-runs the whole search: fetch a page, score it
+  // against the resume, keep only 70%+ matches passing the other filters,
+  // and if there aren't enough yet, fetch the next page and repeat.
   useEffect(() => {
     let cancelled = false;
 
-    async function loadJobs() {
-      try {
-        setLoading(true);
-        setError(null);
-        setNoProfile(false);
-        setIndex(0);
-        setHistory([]);
-
-        // Randomizing the page only makes sense for a broad, unfiltered
-        // browse. A narrow filtered search (e.g. "internship" in Pune) may
-        // only have 1-2 pages of real results — picking a random page up to
-        // 5 can land past the end and come back nearly empty.
-        const hasServerFilters = Boolean(filters.jobType || filters.city);
-        const page = hasServerFilters ? 1 : Math.floor(Math.random() * 5) + 1;
-        const params = new URLSearchParams({ page: String(page) });
-        if (filters.jobType) params.set("employmentType", filters.jobType);
-        if (filters.city) params.set("where", filters.city);
-
-        const res = await fetch(`/api/jobs?${params.toString()}`);
-        if (!res.ok) {
-          throw new Error(`Request failed: ${res.status}`);
-        }
-        const { jobs: fetchedJobs } = await res.json();
-        if (cancelled) return;
-
-        setAllJobs(fetchedJobs);
-        setLoading(false);
-
-        // Score jobs against the user's resume, if they have one.
-        const user = await getCurrentUser();
-        if (!user) {
-          setNoProfile(true);
-          return;
-        }
-
-        const profile = await getProfile(user.id);
-        if (!profile) {
-          setNoProfile(true);
-          return;
-        }
-
-        const resumeText = buildResumeText(profile);
-        setScoring(true);
-
-        const scoreRes = await fetch("/api/score-jobs", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ resumeText, jobs: fetchedJobs }),
-        });
-
-        if (!scoreRes.ok) {
-          console.error("Scoring failed:", await scoreRes.text());
-          return;
-        }
-
-        const { jobs: scoredJobs } = await scoreRes.json();
-        if (!cancelled) {
-          setAllJobs(scoredJobs);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err.message || "Failed to load jobs");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-          setScoring(false);
-        }
-      }
-    }
-
-    loadJobs();
-
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.jobType, filters.city]);
-
-  // Work mode + paid status aren't real Adzuna params (Adzuna doesn't expose
-  // them) — they're detected client-side per job, so filter locally instead
-  // of refetching.
-  const strictlyFiltered = useMemo(() => {
-    return allJobs.filter((job) => {
+    function passesLocalFilters(job) {
       if (filters.workMode && job.workMode !== filters.workMode) return false;
       if (
         filters.jobType === "internship" &&
@@ -119,37 +46,109 @@ export default function DiscoverPage() {
         return false;
       }
       return true;
-    });
-  }, [allJobs, filters.workMode, filters.paidStatus, filters.jobType]);
+    }
 
-  // Stacking a rare work mode (e.g. Remote) on top of an already-narrow
-  // keyword search (e.g. Internship) can leave almost nothing. Rather than
-  // show a near-empty deck, drop the work-mode requirement and say so.
-  const widenedByWorkMode =
-    Boolean(filters.workMode) &&
-    strictlyFiltered.length < 3 &&
-    allJobs.length > strictlyFiltered.length;
+    async function loadJobs() {
+      try {
+        setLoading(true);
+        setError(null);
+        setNoProfile(false);
+        setRanOutOfPages(false);
+        setIndex(0);
+        setHistory([]);
+        setAllJobs([]);
 
-  const jobs = useMemo(() => {
-    if (!widenedByWorkMode) return strictlyFiltered;
-    return allJobs.filter((job) => {
-      if (
-        filters.jobType === "internship" &&
-        filters.paidStatus &&
-        job.paidStatus !== filters.paidStatus
-      ) {
-        return false;
+        const hasServerFilters = Boolean(filters.jobType || filters.city);
+        let page = hasServerFilters ? 1 : Math.floor(Math.random() * 5) + 1;
+
+        // Resolve the resume once up front — if there isn't one, we can't
+        // score or threshold-filter, so just show whatever matches the
+        // other filters on a single page (previous behavior).
+        let resumeText = null;
+        const user = await getCurrentUser();
+        if (user) {
+          const profile = await getProfile(user.id);
+          if (profile) resumeText = buildResumeText(profile);
+        }
+        if (!resumeText && !cancelled) {
+          setNoProfile(true);
+        }
+
+        let collected = [];
+        let attempts = 0;
+        let hasMore = true;
+
+        while (hasMore && attempts < MAX_PAGES && !cancelled) {
+          attempts += 1;
+
+          const params = new URLSearchParams({ page: String(page) });
+          if (filters.jobType) params.set("employmentType", filters.jobType);
+          if (filters.city) params.set("where", filters.city);
+
+          const res = await fetch(`/api/jobs?${params.toString()}`);
+          if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+          const { jobs: fetchedJobs, nextPage } = await res.json();
+
+          let batch = fetchedJobs.filter(passesLocalFilters);
+
+          if (resumeText && batch.length > 0) {
+            const scoreRes = await fetch("/api/score-jobs", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ resumeText, jobs: batch }),
+            });
+            if (scoreRes.ok) {
+              const { jobs: scored } = await scoreRes.json();
+              batch = scored;
+            } else {
+              console.error("Scoring failed:", await scoreRes.text());
+            }
+          }
+
+          collected = collected.concat(batch);
+          if (!cancelled) setAllJobs(collected);
+
+          const goodCount = resumeText
+            ? collected.filter(
+                (j) => typeof j.matchScore === "number" && j.matchScore >= MIN_MATCH_SCORE
+              ).length
+            : collected.length;
+
+          if (!resumeText || goodCount >= TARGET_GOOD_MATCHES || !nextPage) {
+            hasMore = false;
+            if (resumeText && goodCount < TARGET_GOOD_MATCHES && !cancelled) {
+              setRanOutOfPages(true);
+            }
+          } else {
+            page = nextPage;
+          }
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.message || "Failed to load jobs");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
-      return true;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [widenedByWorkMode, strictlyFiltered, allJobs, filters.paidStatus, filters.jobType]);
+    }
 
-  // Reset position in the deck whenever the client-side filtered list changes.
-  useEffect(() => {
-    setIndex(0);
-    setHistory([]);
-  }, [filters.workMode, filters.paidStatus]);
+    loadJobs();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filters.jobType, filters.city, filters.workMode, filters.paidStatus]);
+
+  // Once a resume is in play, only surface jobs that cleared the match bar,
+  // best matches first. Without a resume there's nothing to threshold, so
+  // show everything that was fetched (already passed the other filters).
+  const jobs = noProfile
+    ? allJobs
+    : allJobs
+        .filter((j) => typeof j.matchScore === "number" && j.matchScore >= MIN_MATCH_SCORE)
+        .sort((a, b) => b.matchScore - a.matchScore);
 
   const stack = jobs.slice(index, index + 3); // top 3 for stack effect
   const currentJob = jobs[index];
@@ -228,9 +227,16 @@ export default function DiscoverPage() {
 
         <FiltersPanel filters={filters} onChange={setFilters} />
 
-        {widenedByWorkMode && !loading && (
+        {!noProfile && (
           <p style={{ fontSize: 13, color: "var(--color-text-secondary, #666)", margin: "-8px 0 12px" }}>
-            Few {filters.workMode} matches — showing all {filters.jobType ? filters.jobType.replace("_", "-") : "jobs"} instead.
+            {loading
+              ? "Finding your best matches…"
+              : `Showing ${MIN_MATCH_SCORE}%+ matches for your resume.`}
+          </p>
+        )}
+        {ranOutOfPages && !loading && (
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary, #666)", margin: "-8px 0 12px" }}>
+            Only found {jobs.length} job{jobs.length === 1 ? "" : "s"} at {MIN_MATCH_SCORE}%+ match for these filters.
           </p>
         )}
         {showGoogleFallback && (
@@ -245,11 +251,6 @@ export default function DiscoverPage() {
               Search on Google
             </a>{" "}
             for more.
-          </p>
-        )}
-        {scoring && (
-          <p style={{ fontSize: 13, color: "var(--color-text-secondary, #666)", margin: "-8px 0 12px" }}>
-            Scoring matches against your resume…
           </p>
         )}
         {noProfile && !loading && (
