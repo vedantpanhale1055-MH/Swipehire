@@ -204,6 +204,21 @@ export default function DiscoverPage() {
 
   const canUndo = history.length > 0 && index > 0;
 
+  // Adzuna's own India dataset is thinner than what a general Google search
+  // turns up (Internshala, LinkedIn, Naukri, company pages, etc.). Rather
+  // than pretend SwipeHire has full coverage, offer a direct escape hatch
+  // built from the active filters when results are sparse.
+  function buildGoogleSearchUrl() {
+    const parts = [];
+    if (filters.workMode) parts.push(filters.workMode);
+    parts.push(filters.jobType ? filters.jobType.replace("_", "-") : "job");
+    parts.push("jobs in", filters.city || "India");
+    const query = `${parts.join(" ")}`.trim();
+    return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+  }
+
+  const showGoogleFallback = !loading && !error && jobs.length < 5;
+
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar />
@@ -216,6 +231,20 @@ export default function DiscoverPage() {
         {widenedByWorkMode && !loading && (
           <p style={{ fontSize: 13, color: "var(--color-text-secondary, #666)", margin: "-8px 0 12px" }}>
             Few {filters.workMode} matches — showing all {filters.jobType ? filters.jobType.replace("_", "-") : "jobs"} instead.
+          </p>
+        )}
+        {showGoogleFallback && (
+          <p style={{ fontSize: 13, margin: "-8px 0 12px" }}>
+            Not finding enough here?{" "}
+            <a
+              href={buildGoogleSearchUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "var(--color-primary, #f97316)", textDecoration: "underline" }}
+            >
+              Search on Google
+            </a>{" "}
+            for more.
           </p>
         )}
         {scoring && (
@@ -243,6 +272,14 @@ export default function DiscoverPage() {
             <div className={styles.emptyState}>
               <p>You&apos;re all caught up.</p>
               <span>{savedIds.length} saved · {rejectedIds.length} skipped</span>
+              <a
+                href={buildGoogleSearchUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "var(--color-primary, #f97316)", textDecoration: "underline", fontSize: 13 }}
+              >
+                Search on Google for more
+              </a>
             </div>
           ) : (
             stack
